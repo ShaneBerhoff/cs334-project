@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-def metadataDF(directoryPath):
+def metadataCrema(directoryPath):
     dataPath = Path(directoryPath)
     audioFiles = dataPath.glob('*.wav')
     
@@ -24,5 +24,14 @@ def metadataDF(directoryPath):
     
     return df
 
-df = metadataDF('Data/archive/Crema')
+def metadataRavdess():
+    return
+
+def metadataSavee():
+    return
+
+def metadataTess():
+    return
+
+df = metadataCrema('Data/archive/Crema')
 df.to_csv('Data/CremaMetadata.csv', index=False)
