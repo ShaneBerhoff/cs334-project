@@ -1,3 +1,6 @@
 Data
 __pycache__
 .DS_Store
+.venv/
+*.zip
+*.tar.gz
