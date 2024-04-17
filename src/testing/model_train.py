@@ -6,7 +6,7 @@ from model_arch import TuningAudioClassifier
 from predict import predict
 from training import training
 import torch
-from data_loader import get_subsample_loaders
+from data_loader import get_loaders
 import time
 
 # set up model arch
@@ -18,7 +18,7 @@ model = model.to(device)
 
 start = time.time()
 # set up dataloader
-trainDL, testDL = get_subsample_loaders()
+trainDL, testDL = get_loaders()
 print(f"Data loader time: {time.time() - start}")
 
 # train model
