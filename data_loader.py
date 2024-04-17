@@ -3,6 +3,7 @@ from preprocessing import AudioUtil
 import pandas as pd
 import os
 import metadata
+import util
 
 # ----------------------------
 # Sound Dataset
@@ -53,16 +54,18 @@ class SoundDS(Dataset):
 if __name__ == '__main__':
     data_path = "./"
     df = metadata.Metadata("./Data/archive/").getMetadata()
+    print("Label counts (0 = sad, 1 = angry, 2 = disgust, 3 = fear, 4 = happy, 5 = neutral):\n",df["label"].value_counts())
     myds = SoundDS(df, data_path)
+    for i in range(5):
+        util.save_spectrogram(myds[i][0], i)
 
-    print(myds[0])
 
     # Random split of 80:20 between training and validation
-    # num_items = len(myds)
-    # num_train = round(num_items * 0.8)
-    # num_val = num_items - num_train
-    # train_ds, val_ds = random_split(myds, [num_train, num_val])
+    num_items = len(myds)
+    num_train = round(num_items * 0.8)
+    num_val = num_items - num_train
+    train_ds, val_ds = random_split(myds, [num_train, num_val])
 
     # Create training and validation data loaders
-    # train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
-    # val_dl = DataLoader(val_ds, batch_size=16, shuffle=False)
+    train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
+    val_dl = DataLoader(val_ds, batch_size=16, shuffle=False)

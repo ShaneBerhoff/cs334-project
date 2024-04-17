@@ -1,4 +1,4 @@
-from preProcessing import AudioUtil
+from preprocessing import AudioUtil
 import matplotlib.pyplot as plt
 
 data_path = "Data/archive/Crema"
