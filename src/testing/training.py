@@ -22,7 +22,6 @@ def training(model, train_dl, num_epochs, device):
     # Repeat for each batch in the training set
     for i, data in enumerate(train_dl):
         # Get the input features and target labels, and put them on the GPU
-        print(data)
         inputs, labels = data[0].to(device), data[1].to(device)
 
         # Normalize the inputs
