@@ -23,7 +23,7 @@ print(f"Data loader time: {time.time() - start}")
 
 # train model
 start = time.time()
-training(model, trainDL, 1)
+training(model, trainDL, 1, device)
 print(f"Train time: {time.time() - start}")
 
 # predictions

@@ -75,7 +75,7 @@ def get_subsample_loaders():
     # select class 0 and 1, randomly select 10% of samples
     df_sad = df[df["label"].isin([1])] # sad
     df_happy = df[df["label"].isin([4])] # happy
-    df_sub = pd.concat([df_sad.sample(frac=0.1), df_happy.sample(frac=0.1)])
+    df_sub = pd.concat([df_sad.sample(frac=0.1), df_happy.sample(frac=0.1)], ignore_index=True)
     subds = SoundDS(df_sub, data_path)
 
     # Random split of 80:20 between training and validation

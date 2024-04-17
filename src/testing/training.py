@@ -1,11 +1,10 @@
 import torch.nn as nn
-from torch import device
 import torch
 
 # ----------------------------
 # Training Loop
 # ----------------------------
-def training(model, train_dl, num_epochs):
+def training(model, train_dl, num_epochs, device):
   # Loss Function, Optimizer and Scheduler
   criterion = nn.CrossEntropyLoss()
   optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
@@ -23,6 +22,7 @@ def training(model, train_dl, num_epochs):
     # Repeat for each batch in the training set
     for i, data in enumerate(train_dl):
         # Get the input features and target labels, and put them on the GPU
+        print(data)
         inputs, labels = data[0].to(device), data[1].to(device)
 
         # Normalize the inputs
