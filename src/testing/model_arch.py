@@ -71,8 +71,8 @@ class TuningAudioClassifier (nn.Module):
         return x
 
 # Create the model and put it on the GPU if available
-myModel = TuningAudioClassifier()
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-myModel = myModel.to(device)
+#myModel = TuningAudioClassifier()
+#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#myModel = myModel.to(device)
 # Check that it is on Cuda
-next(myModel.parameters()).device
+#next(myModel.parameters()).device

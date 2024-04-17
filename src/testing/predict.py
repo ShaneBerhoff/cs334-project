@@ -2,9 +2,9 @@ from torch import device
 import torch
 
 # ----------------------------
-# Inference
+# Predict
 # ----------------------------
-def inference (model, val_dl):
+def predict (model, val_dl):
   correct_prediction = 0
   total_prediction = 0
 
@@ -30,5 +30,5 @@ def inference (model, val_dl):
   acc = correct_prediction/total_prediction
   print(f'Accuracy: {acc:.2f}, Total items: {total_prediction}')
 
-# Run inference on trained model with the validation set
-#inference(myModel, val_dl)
+# Run predict on trained model with the validation set
+#predict(myModel, val_dl)
