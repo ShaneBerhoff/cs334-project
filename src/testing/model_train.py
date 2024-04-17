@@ -28,5 +28,5 @@ print(f"Train time: {time.time() - start}")
 
 # predictions
 start = time.time()
-predict(model, testDL)
+predict(model, testDL, device)
 print(f"Predict time: {time.time() - start}")

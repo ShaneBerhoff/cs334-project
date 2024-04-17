@@ -4,7 +4,7 @@ import torch
 # ----------------------------
 # Predict
 # ----------------------------
-def predict (model, val_dl):
+def predict (model, val_dl, device):
   correct_prediction = 0
   total_prediction = 0
 
