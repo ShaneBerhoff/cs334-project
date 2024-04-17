@@ -68,6 +68,29 @@ def get_loaders():
     return train_dl, val_dl
 
 
+def get_subsample_loaders():
+    data_path = util.from_base_path("/")
+    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
+
+    # select class 0 and 1, randomly select 10% of samples
+    df_sad = df[df["label"].isin([1])] # sad
+    df_happy = df[df["label"].isin([4])] # happy
+    df_sub = pd.concat([df_sad.sample(frac=0.1), df_happy.sample(frac=0.1)])
+    subds = SoundDS(df_sub, data_path)
+
+    # Random split of 80:20 between training and validation
+    num_items = len(myds)
+    num_train = round(num_items * 0.8)
+    num_val = num_items - num_train
+    train_ds, val_ds = random_split(myds, [num_train, num_val])
+
+    # Create training and validation data loaders
+    train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
+    val_dl = DataLoader(val_ds, batch_size=16, shuffle=False)
+
+    return train_dl, val_dl
+
+
 if __name__ == '__main__':
     data_path = "/"
     df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
