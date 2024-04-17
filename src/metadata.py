@@ -132,5 +132,5 @@ class Metadata():
         return df
 
 # Usage
-# data = Metadata('Data/archive/')
+# data = Metadata(util.from_base_path('/Data/archive/'))
 # df = data.getMetadata()

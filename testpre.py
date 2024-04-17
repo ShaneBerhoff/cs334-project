@@ -1,4 +1,4 @@
-from preprocessing import AudioUtil
+from src.preprocessing import AudioUtil
 import matplotlib.pyplot as plt
 
 data_path = "Data/archive/Crema"
@@ -22,5 +22,5 @@ axs.set_title('Mel Spectrogram (dB)')
 axs.set_ylabel('Mel Frequency Bin')
 axs.set_xlabel('Time Window')
 plt.colorbar(axs.imshow(sgram[0].numpy(), origin='lower', aspect='auto', cmap='viridis'), ax=axs)
-plt.savefig('mel_spectrogram.png')
+plt.savefig('Data/spectrogram/mel_spectrogram.png')
 plt.close()

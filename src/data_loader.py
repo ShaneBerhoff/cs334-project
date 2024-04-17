@@ -50,15 +50,10 @@ class SoundDS(Dataset):
         return aug_sgram, class_id
 
 
-
-if __name__ == '__main__':
-    data_path = "./"
-    df = metadata.Metadata("./Data/archive/").getMetadata()
-    print("Label counts (0 = sad, 1 = angry, 2 = disgust, 3 = fear, 4 = happy, 5 = neutral):\n",df["label"].value_counts())
+def get_loaders():
+    data_path = util.from_base_path("/")
+    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
     myds = SoundDS(df, data_path)
-    for i in range(5):
-        util.save_spectrogram(myds[i][0], i)
-
 
     # Random split of 80:20 between training and validation
     num_items = len(myds)
@@ -69,3 +64,15 @@ if __name__ == '__main__':
     # Create training and validation data loaders
     train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
     val_dl = DataLoader(val_ds, batch_size=16, shuffle=False)
+
+    return train_dl, val_dl
+
+
+if __name__ == '__main__':
+    data_path = "/"
+    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
+    print("Label counts (0 = sad, 1 = angry, 2 = disgust, 3 = fear, 4 = happy, 5 = neutral):\n",df["label"].value_counts())
+    myds = SoundDS(df, data_path)
+
+    for i in range(5):
+        util.save_spectrogram(myds[i][0], i)

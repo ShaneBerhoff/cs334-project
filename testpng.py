@@ -3,7 +3,7 @@ import numpy as np
 import librosa.display
 import matplotlib.pyplot as plt
 
-audio_path = 'Data/Audio/1001_DFA_ANG_XX.wav'
+audio_path = 'Data/archive/Crema/1001_DFA_ANG_XX.wav'
 audio, sample_rate = librosa.load(audio_path, sr=None)
 
 n_fft = 2048  # The number of data points used in each block for the FFT
@@ -22,5 +22,5 @@ plt.title('Mel Spectrogram')
 plt.tight_layout()
 
 # Save the figure
-plt.savefig('Data/Spectrogram/mel_spectrogram.png')
+plt.savefig('Data/spectrogram/mel_spectrogram.png')
 plt.close()
