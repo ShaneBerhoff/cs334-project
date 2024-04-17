@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from model_arch import TuningAudioClassifier
 from predict import predict
 from training import training

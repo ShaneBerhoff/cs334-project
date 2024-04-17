@@ -79,10 +79,10 @@ def get_subsample_loaders():
     subds = SoundDS(df_sub, data_path)
 
     # Random split of 80:20 between training and validation
-    num_items = len(myds)
+    num_items = len(subds)
     num_train = round(num_items * 0.8)
     num_val = num_items - num_train
-    train_ds, val_ds = random_split(myds, [num_train, num_val])
+    train_ds, val_ds = random_split(subds, [num_train, num_val])
 
     # Create training and validation data loaders
     train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
