@@ -47,14 +47,14 @@ class SoundDS(Dataset):
         # Shift audio
         shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
         # Create spectrogram
-        sgram = AudioUtil.spectro_gram(shift_aud, n_mels=64, n_fft=1024, hop_len=None)
+        sgram = AudioUtil.spectro_gram(shift_aud, n_mels=64, n_fft=1024, hop_len=256)
         # Augment spectrogram
         aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
 
         return aug_sgram, class_id
 
 
-def get_loaders(batch_size=16, split_ratio=0.8, num_workers=0):
+def get_loaders(batch_size=16, split_ratio=0.8, num_workers=4):
     data_path = util.from_base_path("/")
     df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
     myds = SoundDS(df, data_path)
