@@ -53,7 +53,7 @@ class AudioUtil():
     # Pad (or truncate) the signal to a fixed length 'max_ms' in milliseconds
     # ----------------------------
     @staticmethod
-    def pad_trunc(aud, max_ms):
+    def pad_trunc(aud, max_ms, padding_type='reflect'):
         sig, sr = aud
         max_len = sr//1000 * max_ms
         
@@ -61,7 +61,13 @@ class AudioUtil():
             pad_amt = (max_len - sig.shape[-1])  # Total amount of padding needed
             # Pad using reflection to avoid discontinuities typical with zero-padding
             pad = (pad_amt // 2, pad_amt - pad_amt // 2)
-            sig = torch.nn.functional.pad(sig, pad, mode='reflect')
+            
+            if padding_type == 'reflect':
+                sig = torch.nn.functional.pad(sig, pad, mode='reflect')
+            elif padding_type == 'zero':
+                sig = torch.nn.functional.pad(sig, pad, mode='constant', value=0)
+            else:
+                raise ValueError("Invalid padding type. Use 'zero' or 'reflect'.")
         else:
             sig = sig[:, :max_len]  # Truncate the signal if it's longer than the max length
             
