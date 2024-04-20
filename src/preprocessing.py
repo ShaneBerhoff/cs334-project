@@ -24,8 +24,8 @@ class AudioUtil():
             return aud
 
         if (new_channel == 1):
-            # Convert from stereo to mono by selecting only the first channel
-            resig = sig[:1, :]
+            # Convert from stereo to mono by averaging channels
+            resig = torch.mean(sig, axis=0, keepdim=True)
         else:
             # Convert from mono to stereo by duplicating the first channel
             resig = torch.cat([sig, sig])
@@ -43,15 +43,11 @@ class AudioUtil():
             # Nothing to do
             return aud
 
-        num_channels = sig.shape[0]
-        # Resample first channel
-        resig = torchaudio.transforms.Resample(sr, newsr)(sig[:1,:])
-        if (num_channels > 1):
-            # Resample the second channel and merge both channels
-            retwo = torchaudio.transforms.Resample(sr, newsr)(sig[1:,:])
-            resig = torch.cat([resig, retwo])
+        # Resample all channels at the same time 
+        resampler = torchaudio.transforms.Resample(sr, newsr)
+        resig = resampler(sig)
 
-        return ((resig, newsr))
+        return (resig, newsr)
 
     # ----------------------------
     # Pad (or truncate) the signal to a fixed length 'max_ms' in milliseconds
@@ -59,23 +55,15 @@ class AudioUtil():
     @staticmethod
     def pad_trunc(aud, max_ms):
         sig, sr = aud
-        num_rows, sig_len = sig.shape
         max_len = sr//1000 * max_ms
-
-        if (sig_len > max_len):
-            # Truncate the signal to the given length
-            sig = sig[:,:max_len]
-
-        elif (sig_len < max_len):
-            # Length of padding to add at the beginning and end of the signal
-            pad_begin_len = random.randint(0, max_len - sig_len)
-            pad_end_len = max_len - sig_len - pad_begin_len
-
-            # Pad with 0s
-            pad_begin = torch.zeros((num_rows, pad_begin_len))
-            pad_end = torch.zeros((num_rows, pad_end_len))
-
-            sig = torch.cat((pad_begin, sig, pad_end), 1)
+        
+        if sig.shape[-1] < max_len:
+            pad_amt = (max_len - sig.shape[-1])  # Total amount of padding needed
+            # Pad using reflection to avoid discontinuities typical with zero-padding
+            pad = (pad_amt // 2, pad_amt - pad_amt // 2)
+            sig = torch.nn.functional.pad(sig, pad, mode='reflect')
+        else:
+            sig = sig[:, :max_len]  # Truncate the signal if it's longer than the max length
             
         return (sig, sr)
 
@@ -94,16 +82,15 @@ class AudioUtil():
     # Generate a Spectrogram
     # ----------------------------
     @staticmethod
-    def spectro_gram(aud, n_mels=64, n_fft=1024, hop_len=None):
+    def spectro_gram(aud, n_mels=64, n_fft=1024, hop_len=None, top_db=80):
         sig,sr = aud
-        top_db = 80
 
         # spec has shape [channel, n_mels, time], where channel is mono, stereo etc
         spec = transforms.MelSpectrogram(sr, n_fft=n_fft, hop_length=hop_len, n_mels=n_mels)(sig)
 
         # Convert to decibels
         spec = transforms.AmplitudeToDB(top_db=top_db)(spec)
-        return (spec)
+        return spec
 
     # ----------------------------
     # Augment the Spectrogram by masking out some sections of it in both the frequency
