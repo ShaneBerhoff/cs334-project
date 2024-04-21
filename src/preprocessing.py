@@ -1,7 +1,10 @@
-import math, random
+import random
 import torch
 import torchaudio
 from torchaudio import transforms
+import os
+import util
+import metadata
 
 class AudioUtil():
     # ----------------------------
@@ -119,3 +122,30 @@ class AudioUtil():
             aug_spec = transforms.TimeMasking(time_mask_param)(aug_spec, mask_value)
 
         return aug_spec
+
+def preProcessAudio(data_path, metadata_path, save_path, sr=16000, channel=2, duration=2618, shift_pct=.03, n_mels=64, n_fft=1024, hop_len=256):
+    """Process and save all audio files to tensors."""
+    df = metadata.Metadata(metadata_path).getMetadata()
+    os.makedirs(save_path, exist_ok=True)
+
+    for idx, row in df.iterrows():
+        audio_file = os.path.join(data_path, row['filepath'])
+        class_id = row['label']
+
+        # Audio processing pipeline
+        aud = AudioUtil.load_audio(audio_file)
+        reaud = AudioUtil.resample(aud, sr)
+        rechan = AudioUtil.rechannel(reaud, channel)
+        dur_aud = AudioUtil.pad_trunc(rechan, duration)
+        shift_aud = AudioUtil.time_shift(dur_aud, shift_pct)
+        sgram = AudioUtil.spectro_gram(shift_aud, n_mels, n_fft, hop_len)
+        aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
+
+        # Save the preprocessed spectrogram and the label
+        torch.save((aug_sgram, class_id), os.path.join(save_path, f'data_{idx}.pt'))
+        
+def main():
+    preProcessAudio(util.from_base_path("/"), util.from_base_path("/Data/archive/"), util.from_base_path("/Data/tensors/"))
+
+if __name__ == '__main__':
+    main()
