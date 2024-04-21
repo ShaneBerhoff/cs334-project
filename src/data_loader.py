@@ -9,55 +9,45 @@ import util
 # Sound Dataset
 # ----------------------------
 class SoundDS(Dataset):
-    def __init__(self, df, data_path, duration=2618, sr=16000, channel=2, shift_pct=0.3):
-        self.df = df
+    def __init__(self, data_path, shift_pct=0.3):
         self.data_path = str(data_path)
-        self.duration = duration
-        self.sr = sr
-        self.channel = channel
         self.shift_pct = shift_pct
+        self.len = len([name for name in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, name))])
                         
     # ----------------------------
     # Number of items in dataset
     # ----------------------------
     def __len__(self):
-        return len(self.df)    
+        return self.len    
         
     # ----------------------------
     # Get i'th item in dataset
     # ----------------------------
     def __getitem__(self, idx):
-        # Absolute file path of the audio file - concatenate the audio directory with
-        # the relative path
-        audio_file = os.path.join(self.data_path, self.df.loc[idx, 'filepath'])
-        # Get the Class ID
-        class_id = self.df.loc[idx, 'label']
+        # tensorfile
+        tensorFile = os.path.join(self.data_path, f'data_{idx}.pt')
+        # Unpack
+        audio, classID = tensorFile
 
         # Load audio file
-        aud = AudioUtil.load_audio(audio_file)
-        # Some sounds have a higher sample rate, or fewer channels compared to the
-        # majority. So make all sounds have the same number of channels and same 
-        # sample rate. Unless the sample rate is the same, the pad_trunc will still
-        # result in arrays of different lengths, even though the sound duration is
-        # the same.
-        reaud = AudioUtil.resample(aud, self.sr)
-        rechan = AudioUtil.rechannel(reaud, self.channel)
-        dur_aud = AudioUtil.pad_trunc(rechan, self.duration)
+        #aud = AudioUtil.load_audio(audio_file)
+        #reaud = AudioUtil.resample(aud, self.sr)
+        #rechan = AudioUtil.rechannel(reaud, self.channel)
+        #dur_aud = AudioUtil.pad_trunc(rechan, self.duration)
         
         # Shift audio
-        shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
+        #shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
         # Create spectrogram
-        sgram = AudioUtil.spectro_gram(shift_aud, n_mels=64, n_fft=1024, hop_len=256)
+        #sgram = AudioUtil.spectro_gram(shift_aud, n_mels=64, n_fft=1024, hop_len=256)
         # Augment spectrogram
-        aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
+        #aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
 
-        return aug_sgram, class_id
+        return audio, classID
 
 
 def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4):
-    data_path = util.from_base_path("/")
-    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
-    myds = SoundDS(df, data_path)
+    data_path = util.from_base_path("/Data/tensors/")
+    myds = SoundDS(data_path)
 
     # Random split of 80:20 between training and validation
     num_items = len(myds)
