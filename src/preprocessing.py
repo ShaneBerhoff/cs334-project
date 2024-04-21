@@ -137,12 +137,12 @@ def preProcessAudio(data_path, metadata_path, save_path, sr=16000, channel=2, du
         reaud = AudioUtil.resample(aud, sr)
         rechan = AudioUtil.rechannel(reaud, channel)
         dur_aud = AudioUtil.pad_trunc(rechan, duration)
-        shift_aud = AudioUtil.time_shift(dur_aud, shift_pct)
-        sgram = AudioUtil.spectro_gram(shift_aud, n_mels, n_fft, hop_len)
-        aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
+        #shift_aud = AudioUtil.time_shift(dur_aud, shift_pct)
+        #sgram = AudioUtil.spectro_gram(shift_aud, n_mels, n_fft, hop_len)
+        #aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
 
         # Save the preprocessed spectrogram and the label
-        torch.save((aug_sgram, class_id), os.path.join(save_path, f'data_{idx}.pt'))
+        torch.save((dur_aud, class_id), os.path.join(save_path, f'data_{idx}.pt'))
         
 def main():
     preProcessAudio(util.from_base_path("/"), util.from_base_path("/Data/archive/"), util.from_base_path("/Data/tensors/"))
