@@ -63,7 +63,7 @@ def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4):
     return train_dl, val_dl
 
 
-def get_subsample_loaders(batch_size=16, split_ratio=0.8, num_workers=0):
+def get_subsample_loaders(batch_size=32, split_ratio=0.8, num_workers=4):
     data_path = util.from_base_path("/")
     df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
 
@@ -80,8 +80,8 @@ def get_subsample_loaders(batch_size=16, split_ratio=0.8, num_workers=0):
     train_ds, val_ds = random_split(subds, [num_train, num_val])
 
     # Create training and validation data loaders
-    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
+    val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
     return train_dl, val_dl
 
