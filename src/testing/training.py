@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import time
 
 # ----------------------------
 # Training Loop
@@ -13,16 +14,18 @@ def training(model, train_dl, num_epochs, device):
                                                 epochs=num_epochs,
                                                 anneal_strategy='linear')
 
+  model.train() # Set model to training mode
   # Repeat for each epoch
   for epoch in range(num_epochs):
+    epoch_start = time.time()
     running_loss = 0.0
     correct_prediction = 0
     total_prediction = 0
 
     # Repeat for each batch in the training set
-    for i, data in enumerate(train_dl):
+    for i, (inputs, labels) in enumerate(train_dl):
         # Get the input features and target labels, and put them on the GPU
-        inputs, labels = data[0].to(device), data[1].to(device)
+        inputs, labels = inputs.to(device), labels.to(device)
 
         # Normalize the inputs
         inputs_m, inputs_s = inputs.mean(), inputs.std()
@@ -45,7 +48,7 @@ def training(model, train_dl, num_epochs, device):
         _, prediction = torch.max(outputs,1)
         # Count of predictions that matched the target label
         correct_prediction += (prediction == labels).sum().item()
-        total_prediction += prediction.shape[0]
+        total_prediction += labels.size(0)
 
         #if i % 10 == 0:    # print every 10 mini-batches
         #    print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 10))
@@ -54,9 +57,7 @@ def training(model, train_dl, num_epochs, device):
     num_batches = len(train_dl)
     avg_loss = running_loss / num_batches
     acc = correct_prediction/total_prediction
-    print(f'Epoch: {epoch}, Loss: {avg_loss:.2f}, Accuracy: {acc:.2f}')
+    epoch_duration = time.time() - epoch_start
+    print(f'Epoch: {epoch + 1}, Loss: {avg_loss:.2f}, Accuracy: {acc:.2f} Duration: {epoch_duration:.2f} sec')
 
   print('Finished Training')
-  
-#num_epochs=2   # Just for demo, adjust this higher.
-#training(myModel, train_dl, num_epochs)
