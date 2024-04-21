@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import metadata
 import util
+import torch
 
 # ----------------------------
 # Sound Dataset
@@ -25,7 +26,7 @@ class SoundDS(Dataset):
     # ----------------------------
     def __getitem__(self, idx):
         # tensorfile
-        tensorFile = os.path.join(self.data_path, f'data_{idx}.pt')
+        tensorFile = torch.load(os.path.join(self.data_path, f'data_{idx}.pt'))
         # Unpack
         audio, classID = tensorFile
 
