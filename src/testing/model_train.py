@@ -24,7 +24,7 @@ def main():
 
     # train model
     start = time.time()
-    training(model, trainDL, 1, device)
+    training(model, trainDL, 5, device)
     print(f"Train time: {time.time() - start}")
 
     # predictions
