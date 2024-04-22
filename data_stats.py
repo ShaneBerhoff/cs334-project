@@ -10,9 +10,10 @@ def Crema(directoryPath):
     for filePath in audioFiles:
         waveform, sr = torchaudio.load(filePath)
         length = waveform.shape[1] / sr
-        data.append((sr, length))
+        channels = waveform.shape[0]
+        data.append((sr, length, channels))
         
-    df = pd.DataFrame(data, columns=['sampleRate', 'length'])
+    df = pd.DataFrame(data, columns=['sampleRate', 'length', 'channels'])
     
     return df
 
@@ -27,9 +28,10 @@ def Ravdess(path: str):
         for file in files:
             waveform, sr = torchaudio.load(file)
             length = waveform.shape[1] / sr
-            data.append((sr, length))
+            channels = waveform.shape[0]
+            data.append((sr, length, channels))
     
-    df = pd.DataFrame(data, columns=['sampleRate', 'length'])
+    df = pd.DataFrame(data, columns=['sampleRate', 'length', 'channels'])
 
     return df
 
@@ -41,9 +43,10 @@ def Savee(directoryPath):
     for filePath in audioFiles:
         waveform, sr = torchaudio.load(filePath)
         length = waveform.shape[1] / sr
-        data.append((sr, length))
+        channels = waveform.shape[0]
+        data.append((sr, length, channels))
         
-    df = pd.DataFrame(data, columns=['sampleRate', 'length'])
+    df = pd.DataFrame(data, columns=['sampleRate', 'length', 'channels'])
     
     return df
 
@@ -58,9 +61,10 @@ def Tess(path: str):
         for file in files:
             waveform, sr = torchaudio.load(file)
             length = waveform.shape[1] / sr
-            data.append((sr, length))
+            channels = waveform.shape[0]
+            data.append((sr, length, channels))
 
-    df = pd.DataFrame(data, columns=['sampleRate', 'length'])
+    df = pd.DataFrame(data, columns=['sampleRate', 'length', 'channels'])
 
     return df
 
@@ -76,3 +80,6 @@ print(df['sampleRate'].value_counts())
 
 print("\nAverage Length of Clip (s)")
 print(df['length'].mean())
+
+print("\nNum Channels Counts")
+print(df['channels'].value_counts())
