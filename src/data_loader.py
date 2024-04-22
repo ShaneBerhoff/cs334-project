@@ -67,11 +67,11 @@ def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_
     return train_dl, val_dl
 
 # Check for working
-if __name__ == '__main__':
-    data_path = "/"
-    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
-    print("Label counts (0 = sad, 1 = angry, 2 = disgust, 3 = fear, 4 = happy, 5 = neutral):\n",df["label"].value_counts())
-    myds = SoundDS(df, data_path)
-
-    for i in range(5):
-        util.save_spectrogram(myds[i][0], i)
+#if __name__ == '__main__':
+#    data_path = "/"
+#    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
+#    print("Label counts (0 = sad, 1 = angry, 2 = disgust, 3 = fear, 4 = happy, 5 = neutral):\n",df["label"].value_counts())
+#    myds = SoundDS(df, data_path)
+#
+#    for i in range(5):
+#        util.save_spectrogram(myds[i][0], i)
