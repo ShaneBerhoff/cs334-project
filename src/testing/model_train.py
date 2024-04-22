@@ -19,7 +19,7 @@ def main():
 
     start = time.time()
     # set up dataloader
-    trainDL, testDL = get_loaders()
+    trainDL, testDL = get_loaders(n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5))
     print(f"Data loader time: {time.time() - start}")
 
     # train model
