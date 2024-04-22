@@ -10,9 +10,14 @@ import torch
 # Sound Dataset
 # ----------------------------
 class SoundDS(Dataset):
-    def __init__(self, data_path, shift_pct=0.3):
+    def __init__(self, data_path, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2):
         self.data_path = str(data_path)
         self.shift_pct = shift_pct
+        self.n_mels = n_mels
+        self.n_fft = n_fft
+        self.hop_len = hop_len
+        self.max_mask_pct = max_mask_pct
+        self.n_masks = n_masks
         self.len = len([name for name in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, name))])
                         
     # ----------------------------
@@ -39,9 +44,9 @@ class SoundDS(Dataset):
         # Shift audio
         shift_aud = AudioUtil.time_shift(audio, self.shift_pct)
         # Create spectrogram
-        sgram = AudioUtil.spectro_gram(shift_aud, n_mels=64, n_fft=1024, hop_len=256)
+        sgram = AudioUtil.spectro_gram(shift_aud, self.n_mels, self.n_fft, self.hop_len)
         # Augment spectrogram
-        aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
+        aug_sgram = AudioUtil.spectro_augment(sgram, self.max_mask_pct, n_freq_masks=self.n_masks, n_time_masks=self.n_masks)
 
         return aug_sgram, classID
 
