@@ -10,7 +10,7 @@ import torch
 # Sound Dataset
 # ----------------------------
 class SoundDS(Dataset):
-    def __init__(self, data_path, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2):
+    def __init__(self, data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks):
         self.data_path = str(data_path)
         self.shift_pct = shift_pct
         self.n_mels = n_mels
@@ -51,38 +51,15 @@ class SoundDS(Dataset):
         return aug_sgram, classID
 
 
-def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4):
+def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2):
     data_path = util.from_base_path("/Data/tensors/")
-    myds = SoundDS(data_path)
+    myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks)
 
     # Random split of 80:20 between training and validation
     num_items = len(myds)
     num_train = round(num_items * split_ratio)
     num_val = num_items - num_train
     train_ds, val_ds = random_split(myds, [num_train, num_val])
-
-    # Create training and validation data loaders
-    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
-    val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
-
-    return train_dl, val_dl
-
-
-def get_subsample_loaders(batch_size=32, split_ratio=0.8, num_workers=4):
-    data_path = util.from_base_path("/")
-    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
-
-    # select class 0 and 1, randomly select 10% of samples
-    df_sad = df[df["label"].isin([1])] # sad
-    df_happy = df[df["label"].isin([4])] # happy
-    df_sub = pd.concat([df_sad.sample(frac=0.1), df_happy.sample(frac=0.1)], ignore_index=True)
-    subds = SoundDS(df_sub, data_path)
-
-    # Random split of 80:20 between training and validation
-    num_items = len(subds)
-    num_train = round(num_items * split_ratio)
-    num_val = num_items - num_train
-    train_ds, val_ds = random_split(subds, [num_train, num_val])
 
     # Create training and validation data loaders
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
