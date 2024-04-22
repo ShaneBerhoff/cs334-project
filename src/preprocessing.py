@@ -123,7 +123,7 @@ class AudioUtil():
 
         return aug_spec
 
-def preProcessAudio(data_path, metadata_path, save_path, sr=16000, channel=2, duration=2618, shift_pct=.03, n_mels=64, n_fft=1024, hop_len=256):
+def preProcessAudio(data_path, metadata_path, save_path, sr=24414, channel=1, duration=2618, shift_pct=.03, n_mels=64, n_fft=1024, hop_len=256):
     """Process and save all audio files to tensors."""
     df = metadata.Metadata(metadata_path).getMetadata()
     os.makedirs(save_path, exist_ok=True)
