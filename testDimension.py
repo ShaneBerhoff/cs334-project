@@ -3,9 +3,9 @@ import pandas as pd
 
 # Calc params for wanted dimensions
 dimension = 224
-sr = 16000
+sr = 24414
 duration_ms = 2618
-hop = int((sr*(duration_ms/1000))//(dimension-1))
+hop = int((sr*(duration_ms/1000))//(224-1)-5) # magic formula
 
 def main():
     # Data loader
