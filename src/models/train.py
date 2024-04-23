@@ -7,7 +7,7 @@ import time
 
 def main(full=True, batch=32, workers=4):
     model = mnv3tl.MobileNetV3TL(full=full)
-    train_dl, test_dl = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5))
+    train_dl, test_dl = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
 
     # train
     start = time.time()
