@@ -7,19 +7,14 @@ import torch
 import torchvision.transforms as transforms
 
 
-TRANSFORMS = {
-    'mobilenetv3': transforms.Compose([
-        transforms.Lambda(lambda x: x.expand(3, -1, -1)),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ]),
-}
-
+def expand_dim(tensor):
+    return tensor.expand(3, -1, -1)
 
 # ----------------------------
 # Sound Dataset
 # ----------------------------
 class SoundDS(Dataset):
-    def __init__(self, data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, model=None):
+    def __init__(self, data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, model=None): # model for eventual modularization?
         self.data_path = str(data_path)
         self.shift_pct = shift_pct
         self.n_mels = n_mels
@@ -28,7 +23,10 @@ class SoundDS(Dataset):
         self.max_mask_pct = max_mask_pct
         self.n_masks = n_masks
         self.len = len([name for name in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, name))])
-        self.transform = TRANSFORMS[model] if model else None
+        self.transform = transforms.Compose([
+                transforms.Lambda(expand_dim),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ])
                         
     # ----------------------------
     # Number of items in dataset
@@ -59,16 +57,14 @@ class SoundDS(Dataset):
         aug_sgram = AudioUtil.spectro_augment(sgram, self.max_mask_pct, n_freq_masks=self.n_masks, n_time_masks=self.n_masks)
 
         # Transform for model
-        if self.transform:
-            aug_sgram = self.transform(aug_sgram)
+        transform_sgram = self.transform(aug_sgram)
 
-        print(aug_sgram.shape)
-        return aug_sgram, classID
+        return transform_sgram, classID
 
 
 def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2):
     data_path = util.from_base_path("/Data/tensors/")
-    myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks)
+    myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, model='mobilenetv3')
 
     # Random split of 80:20 between training and validation
     num_items = len(myds)
