@@ -78,7 +78,7 @@ def train(model, train_dl, max_epochs):
         avg_loss = running_loss / num_batches
         acc = correct_prediction / total_prediction
         epoch_duration = time.time() - epoch_start
-
+        
         print(f"Epoch {epoch+1}/{max_epochs}, Loss: {avg_loss:.4f}, Accuracy: {acc:.4f}, Duration: {epoch_duration:.4f}")
         
         if epoch % 10 == 0:
