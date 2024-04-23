@@ -20,9 +20,10 @@ class MobileNetV3TL(nn.Module):
 
             if full:
                 self.model.classifier = nn.Sequential(
-                    nn.Linear(self.model.classifier.in_features, 20), # TODO: Change 40 to a better number
+                    nn.Linear(self.model.classifier.in_features, 12), # TODO: Change 40 to a better number
                     nn.ReLU(),
-                    nn.Linear(20, CLASSES)
+                    nn.Dropout(p=0.2),
+                    nn.Linear(12, CLASSES)
                 )
             else:
                 self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
@@ -31,7 +32,7 @@ class MobileNetV3TL(nn.Module):
         return self.model(x)
     
     def save(self, path, epoch=0):
-        torch.save(self.state_dict(), f"{path}/mnv3tl-{"full" if self.full else "small"}-e{epoch}.pt")
+        torch.save(self.state_dict(), f"{path}/mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
 
 
 def train(model, train_dl, max_epochs):
