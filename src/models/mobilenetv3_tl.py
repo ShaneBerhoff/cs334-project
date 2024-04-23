@@ -72,14 +72,13 @@ def train(model, train_dl, max_epochs):
             correct_prediction += (prediction == labels).sum().item()
             total_prediction += labels.size(0)
 
-            if i % 5 == 0:
+            if i % 10 == 0:
                 model.save("./")
 
         num_batches = len(train_dl)
         avg_loss = running_loss / num_batches
         acc = correct_prediction / total_prediction
         epoch_duration = time.time() - epoch_start
-        model.save("./")
         print(f"Epoch {epoch+1}/{max_epochs}, Loss: {avg_loss:.4f}, Accuracy: {acc:.4f}, Duration: {epoch_duration:.4f}")
         
 
