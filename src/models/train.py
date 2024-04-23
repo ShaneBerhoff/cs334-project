@@ -4,8 +4,9 @@ from data_loader import get_loaders
 import os
 import argparse
 import time
+import util
 
-def main(full=True, batch=32, workers=4, save_path="./Data/Model1"):
+def main(full, batch, workers, save_path):
     os.makedirs(save_path, exist_ok=True)
     
     model = mnv3tl.MobileNetV3TL(full=full, save_path=save_path)
@@ -35,8 +36,9 @@ if __name__ == '__main__':
     parser.add_argument('--full', default=False, help='Use full TL model')
     parser.add_argument('--batch', default=32, help='Batch size')
     parser.add_argument('--workers', default=4, help='Workers to use for data loading')
+    parser.add_argument('--save', default="./Data/Model1", help='Name of directory to save model weights')
     args = parser.parse_args()
 
     print(f"Running train and predict on{' full' if args.full else ''} mobilenetv3_tl with batch size {args.batch} and {args.workers} workers")
 
-    main(full=bool(args.full), batch=int(args.batch), workers=int(args.workers))
+    main(full=bool(args.full), batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("./Data/"), args.save))
