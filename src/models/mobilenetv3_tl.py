@@ -3,6 +3,7 @@ import timm
 import torch.nn as nn
 import torch
 import time
+from torchvision.transforms import Compose, Resize, Lambda, Normalize
 
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 
@@ -48,7 +49,14 @@ class MobileNetV3TL(nn.Module):
                 )
             else:
                 self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
-
+        
+        self.config = resolve_data_config({}, model=model)
+        self.transform = Compose([
+            Resize((self.config['input_size'][1], self.config['input_size'][2])),
+            Lambda(lambda x: x.repeat(3, 1, 1)),  # Replicate the channel to simulate RGB
+            Normalize(mean=self.config['mean'], std=self.config['std'])
+        ])
+        
     def forward(self, x):
         return self.model(x)
     
@@ -81,7 +89,7 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
 
         model.train()
 
-        for i, (inputs, labels) in enumerate(train_dl):
+        for _, (inputs, labels) in enumerate(train_dl):
             inputs, labels = inputs.to(device), labels.to(device)
             inputs_m, inputs_s = inputs.mean(), inputs.std()
             inputs = (inputs - inputs_m) / inputs_s
