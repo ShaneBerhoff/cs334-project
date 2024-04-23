@@ -11,7 +11,7 @@ def main(full=True, batch=32, workers=4):
 
     # train
     start = time.time()
-    mnv3tl.train(model, train_dl, 200)
+    mnv3tl.train(model, train_dl, test_dl, 200)
     print(f"Train time: {time.time() - start}")
 
     # predict

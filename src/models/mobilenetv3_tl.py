@@ -37,7 +37,7 @@ class MobileNetV3TL(nn.Module):
 
 # TODO: add early stopping, dropout, l1/l2 and retrain
 # early stopping first so we can use pretrained weights, then l1/l2 from scratch
-def train(model, train_dl, max_epochs):
+def train(model, train_dl, val_dl, max_epochs, patience=5):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
@@ -47,13 +47,16 @@ def train(model, train_dl, max_epochs):
                                                     steps_per_epoch=len(train_dl),
                                                     epochs=max_epochs, anneal_strategy='linear')
     
-    model.train()
+    best_val_loss = float('inf')
+    epochs_without_improvement = 0
 
     for epoch in range(max_epochs):
         epoch_start = time.time()
         running_loss = 0.0
         correct_prediction = 0
         total_prediction = 0
+
+        model.train()
 
         for i, (inputs, labels) in enumerate(train_dl):
             inputs, labels = inputs.to(device), labels.to(device)
@@ -81,8 +84,31 @@ def train(model, train_dl, max_epochs):
         
         print(f"Epoch {epoch+1}/{max_epochs}, Loss: {avg_loss:.4f}, Accuracy: {acc:.4f}, Duration: {epoch_duration:.4f}")
         
-        if epoch % 10 == 0:
-                model.save("./", epoch+1)
+        # Validation
+        val_loss = 0.0
+        model.eval()
+        with torch.no_grad():
+            for inputs, labels in val_dl:
+                inputs, labels = inputs.to(device), labels.to(device)
+                inputs_m, inputs_s = inputs.mean(), inputs.std()
+                inputs = (inputs - inputs_m) / inputs_s
+
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+                val_loss += loss.item()
+
+        val_loss /= len(val_dl)
+        print(f"Validation Loss: {val_loss:.4f}")
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            epochs_without_improvement = 0
+            model.save("./", epoch+1)
+        else:
+            epochs_without_improvement += 1
+            if epochs_without_improvement >= patience:
+                print(f"Early stopping at epoch {epoch+1}")
+                break
         
 
 def predict(model, val_dl):
