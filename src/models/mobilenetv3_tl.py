@@ -4,6 +4,7 @@ from timm.data import resolve_data_config
 import torch.nn as nn
 import torch
 import time
+import os
 from torchvision.transforms import Compose, Resize, Lambda, Normalize
 
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
@@ -66,7 +67,12 @@ class MobileNetV3TL(nn.Module):
     
     # TODO: test
     def save(self, epoch=0):
-        torch.save(self.model.state_dict(), f"{self.save_path}/Weights/mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
+        # Create directory if it doesn't exist
+        weights_path = os.path.join(self.save_path, "Weights")
+        os.makedirs(weights_path, exist_ok=True)
+        # Construct path and save
+        full_path = os.path.join(weights_path, f"mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
+        torch.save(self.model.state_dict(), full_path)
 
 
 # TODO: add early stopping, dropout, l1/l2 and retrain
