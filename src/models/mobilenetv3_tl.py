@@ -7,9 +7,10 @@ import time
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 
 class MobileNetV3TL(nn.Module):
-    def __init__(self, path=None, full=True):
+    def __init__(self, path=None, full=True, dropout=0.2):
         super(MobileNetV3TL, self).__init__()
         self.full = full
+        self.dropout = dropout
 
         if path is not None:
             self.load_state_dict(torch.load(path))
@@ -22,11 +23,14 @@ class MobileNetV3TL(nn.Module):
                 self.model.classifier = nn.Sequential(
                     nn.Linear(self.model.classifier.in_features, 12), # TODO: Change 40 to a better number
                     nn.ReLU(),
-                    nn.Dropout(p=0.2),
+                    nn.Dropout(p=self.dropout),
                     nn.Linear(12, CLASSES)
                 )
             else:
-                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
+                self.model.classifier = nn.Sequential([
+                    nn.dropout(p=self.dropout),
+                    nn.Linear(self.model.classifier.in_features, CLASSES)
+                ])
 
     def forward(self, x):
         return self.model(x)
