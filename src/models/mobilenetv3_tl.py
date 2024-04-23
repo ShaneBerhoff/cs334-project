@@ -31,15 +31,7 @@ class MobileNetV3TL(nn.Module):
             else:
                 self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
 
-            # TODO: FIX AND REMOVE
-            state_dict = torch.load(input_path)
-            minus_model = {k[6:]: v for k, v in state_dict.items()}
-            print("Keys match:", minus_model.keys()==self.model.state_dict().keys())
-
-            self.model.load_state_dict(minus_model)
-            # END TODO
-            
-            # self.model.load_state_dict(torch.load(input_path))
+            self.model.load_state_dict(torch.load(input_path))
         else:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True)
             # for param in self.model.parameters():
@@ -102,8 +94,8 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
         for _, (inputs, labels) in enumerate(train_dl):
             inputs, labels = inputs.to(device), labels.to(device)
             # Batch normalizaion
-            # inputs_m, inputs_s = inputs.mean(), inputs.std()
-            # inputs = (inputs - inputs_m) / inputs_s
+            inputs_m, inputs_s = inputs.mean(), inputs.std()
+            inputs = (inputs - inputs_m) / inputs_s
 
             optimizer.zero_grad()
 
