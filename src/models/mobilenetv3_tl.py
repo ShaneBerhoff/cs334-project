@@ -13,7 +13,27 @@ class MobileNetV3TL(nn.Module):
         self.dropout = dropout
 
         if path is not None:
-            self.load_state_dict(torch.load(path))
+            self.model = timm.create_model('mobilenetv3_large_100', pretrained=False)
+
+            if full:
+                self.model.classifier = nn.Sequential(
+                    nn.Linear(self.model.classifier.in_features, 12), # TODO: Change 40 to a better number
+                    nn.ReLU(),
+                    nn.Dropout(p=self.dropout),
+                    nn.Linear(12, CLASSES)
+                )
+            else:
+                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
+
+            # TODO: FIX AND REMOVE
+            state_dict = torch.load(path)
+            minus_model = {k[6:]: v for k, v in state_dict.items()}
+            print("Keys match:", minus_model.keys()==self.model.state_dict().keys())
+
+            self.model.load_state_dict(minus_model)
+            # END TODO
+            
+            # self.model.load_state_dict(torch.load(path))
         else:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True)
             # for param in self.model.parameters():
@@ -32,12 +52,14 @@ class MobileNetV3TL(nn.Module):
     def forward(self, x):
         return self.model(x)
     
+    # TODO: test
     def save(self, path, epoch=0):
-        torch.save(self.state_dict(), f"{path}/mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
+        torch.save(self.model.state_dict(), f"{path}/mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
 
 
 # TODO: add early stopping, dropout, l1/l2 and retrain
 # early stopping first so we can use pretrained weights, then l1/l2 from scratch
+# performance sucks with dropout and l1/l2
 def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
