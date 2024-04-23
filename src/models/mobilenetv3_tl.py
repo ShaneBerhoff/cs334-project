@@ -7,29 +7,32 @@ import time
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 
 class MobileNetV3TL(nn.Module):
-    def __init__(self, path=None):
+    def __init__(self, path=None, full=True):
         super(MobileNetV3TL, self).__init__()
+        self.full = full
+
         if path is not None:
             self.load_state_dict(torch.load(path))
         else:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True)
-            self.model.eval()
-
-            # freeze all layers
             for param in self.model.parameters():
                 param.requires_grad = False
-            
-            self.model.classifier = nn.Sequential(
-                nn.Linear(self.model.classifier.in_features, 20), # TODO: Change 40 to a better number
-                nn.ReLU(),
-                nn.Linear(20, CLASSES)
-            )
+
+            if full:
+                self.model.classifier = nn.Sequential(
+                    nn.Linear(self.model.classifier.in_features, 20), # TODO: Change 40 to a better number
+                    nn.ReLU(),
+                    nn.Linear(20, CLASSES)
+                )
+            else:
+                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
 
     def forward(self, x):
         return self.model(x)
     
-    def save(self, path):
-        torch.save(self.state_dict(), path)
+    def save(self, path, epoch=0):
+        torch.save(self.state_dict(), f"{path}/mnv3tl-{"full" if self.full else "small"}-e{epoch}.pt")
+
 
 def train(model, train_dl, max_epochs):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -69,12 +72,13 @@ def train(model, train_dl, max_epochs):
             total_prediction += labels.size(0)
 
             if i % 5 == 0:
-                model.save("mnv3tl.pt")
+                model.save("./")
 
         num_batches = len(train_dl)
         avg_loss = running_loss / num_batches
         acc = correct_prediction / total_prediction
         epoch_duration = time.time() - epoch_start
+        model.save("./")
         print(f"Epoch {epoch+1}/{max_epochs}, Loss: {avg_loss:.4f}, Accuracy: {acc:.4f}, Duration: {epoch_duration:.4f}")
         
 
@@ -84,6 +88,8 @@ def predict(model, val_dl):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
+
+    model.eval()
 
     with torch.no_grad():
         for data in val_dl:
