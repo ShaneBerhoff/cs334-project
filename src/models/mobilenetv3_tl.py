@@ -15,8 +15,8 @@ class MobileNetV3TL(nn.Module):
             self.load_state_dict(torch.load(path))
         else:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True)
-            for param in self.model.parameters():
-                param.requires_grad = False
+            # for param in self.model.parameters():
+            #     param.requires_grad = False
 
             if full:
                 self.model.classifier = nn.Sequential(
@@ -35,6 +35,8 @@ class MobileNetV3TL(nn.Module):
         torch.save(self.state_dict(), f"{path}/mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
 
 
+# TODO: add early stopping, dropout, l1/l2 and retrain
+# early stopping first so we can use pretrained weights, then l1/l2 from scratch
 def train(model, train_dl, max_epochs):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -76,7 +78,7 @@ def train(model, train_dl, max_epochs):
         avg_loss = running_loss / num_batches
         acc = correct_prediction / total_prediction
         epoch_duration = time.time() - epoch_start
-        
+
         print(f"Epoch {epoch+1}/{max_epochs}, Loss: {avg_loss:.4f}, Accuracy: {acc:.4f}, Duration: {epoch_duration:.4f}")
         
         if epoch % 10 == 0:
