@@ -27,10 +27,7 @@ class MobileNetV3TL(nn.Module):
                     nn.Linear(12, CLASSES)
                 )
             else:
-                self.model.classifier = nn.Sequential(
-                    nn.Dropout(p=self.dropout),
-                    nn.Linear(self.model.classifier.in_features, CLASSES)
-                )
+                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
 
     def forward(self, x):
         return self.model(x)
@@ -72,11 +69,11 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
             outputs = model(inputs)
             loss = criterion(outputs, labels)
 
-            # L1 regularization
-            l1_reg = torch.tensor(0.).to(device)
-            for param in model.parameters():
-                l1_reg += torch.norm(param, 1)
-            loss += l1_lambda * l1_reg
+            # # L1 regularization
+            # l1_reg = torch.tensor(0.).to(device)
+            # for param in model.parameters():
+            #     l1_reg += torch.norm(param, 1)
+            # loss += l1_lambda * l1_reg
 
             loss.backward()
             optimizer.step()
