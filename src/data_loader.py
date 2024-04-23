@@ -1,8 +1,8 @@
 from torch.utils.data import DataLoader, Dataset, random_split
-from src.preprocessing import AudioUtil
+from preprocessing import AudioUtil
 import os
-import src.metadata as metadata
-import src.util as util
+import metadata
+import util
 import torch
 
 # ----------------------------
