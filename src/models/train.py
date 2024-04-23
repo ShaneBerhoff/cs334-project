@@ -1,17 +1,27 @@
 import models.mobilenetv3_tl as mnv3tl
 import models.homebrew
 from data_loader import get_loaders
-
+import os
 import argparse
 import time
 
-def main(full=True, batch=32, workers=4):
-    model = mnv3tl.MobileNetV3TL(full=full)
-    train_dl, test_dl = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
+def main(full=True, batch=32, workers=4, save_path="./Data/Model1"):
+    os.makedirs(save_path, exist_ok=True)
+    
+    model = mnv3tl.MobileNetV3TL(full=full, save_path=save_path)
+    train_dl, test_dl, train_index, test_index = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
+    
+    with open(f'{save_path}/train_indices.txt', 'w') as f:
+        for index in train_index:
+            f.write(f"{index}\n")
 
+    with open(f'{save_path}/test_indices.txt', 'w') as f:
+        for index in test_index:
+            f.write(f"{index}\n")
+    
     # train
     start = time.time()
-    mnv3tl.train(model, train_dl, test_dl, 200)
+    mnv3tl.train(model, train_dl, test_dl, 20)
     print(f"Train time: {time.time() - start}")
 
     # predict

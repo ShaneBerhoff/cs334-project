@@ -63,12 +63,15 @@ def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_
     num_train = round(num_items * split_ratio)
     num_val = num_items - num_train
     train_ds, val_ds = random_split(myds, [num_train, num_val])
+    
+    train_indices = train_ds.indices
+    val_indices = val_ds.indices
 
     # Create training and validation data loaders
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
     val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
-    return train_dl, val_dl
+    return train_dl, val_dl, train_indices, val_indices
 
 
 def get_test_loader(n_mels, n_fft, hop_len, transform=None):

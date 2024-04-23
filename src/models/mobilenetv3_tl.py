@@ -11,12 +11,13 @@ def repeat_channels(x):
     return x.repeat(3, 1, 1)
 
 class MobileNetV3TL(nn.Module):
-    def __init__(self, path=None, full=True, dropout=0.2):
+    def __init__(self, input_path=None, save_path="./Model/", full=True, dropout=0.2):
         super(MobileNetV3TL, self).__init__()
         self.full = full
         self.dropout = dropout
+        self.save_path = save_path
 
-        if path is not None:
+        if input_path is not None:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=False)
 
             if full:
@@ -30,14 +31,14 @@ class MobileNetV3TL(nn.Module):
                 self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
 
             # TODO: FIX AND REMOVE
-            state_dict = torch.load(path)
+            state_dict = torch.load(input_path)
             minus_model = {k[6:]: v for k, v in state_dict.items()}
             print("Keys match:", minus_model.keys()==self.model.state_dict().keys())
 
             self.model.load_state_dict(minus_model)
             # END TODO
             
-            # self.model.load_state_dict(torch.load(path))
+            # self.model.load_state_dict(torch.load(input_path))
         else:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True)
             # for param in self.model.parameters():
@@ -64,8 +65,8 @@ class MobileNetV3TL(nn.Module):
         return self.model(x)
     
     # TODO: test
-    def save(self, path, epoch=0):
-        torch.save(self.model.state_dict(), f"{path}/mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
+    def save(self, epoch=0):
+        torch.save(self.model.state_dict(), f"{self.save_path}/Weights/mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
 
 
 # TODO: add early stopping, dropout, l1/l2 and retrain
@@ -94,8 +95,9 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
 
         for _, (inputs, labels) in enumerate(train_dl):
             inputs, labels = inputs.to(device), labels.to(device)
-            inputs_m, inputs_s = inputs.mean(), inputs.std()
-            inputs = (inputs - inputs_m) / inputs_s
+            # Batch normalizaion
+            # inputs_m, inputs_s = inputs.mean(), inputs.std()
+            # inputs = (inputs - inputs_m) / inputs_s
 
             optimizer.zero_grad()
 
@@ -144,7 +146,7 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             epochs_without_improvement = 0
-            model.save("./", epoch+1)
+            model.save(epoch+1)
         else:
             epochs_without_improvement += 1
             if epochs_without_improvement >= patience:
