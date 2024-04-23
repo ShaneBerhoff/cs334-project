@@ -27,10 +27,10 @@ class MobileNetV3TL(nn.Module):
                     nn.Linear(12, CLASSES)
                 )
             else:
-                self.model.classifier = nn.Sequential([
-                    nn.dropout(p=self.dropout),
+                self.model.classifier = nn.Sequential(
+                    nn.Dropout(p=self.dropout),
                     nn.Linear(self.model.classifier.in_features, CLASSES)
-                ])
+                )
 
     def forward(self, x):
         return self.model(x)
@@ -41,7 +41,7 @@ class MobileNetV3TL(nn.Module):
 
 # TODO: add early stopping, dropout, l1/l2 and retrain
 # early stopping first so we can use pretrained weights, then l1/l2 from scratch
-def train(model, train_dl, val_dl, max_epochs, patience=5):
+def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
@@ -71,6 +71,13 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
 
             outputs = model(inputs)
             loss = criterion(outputs, labels)
+
+            # L1 regularization
+            l1_reg = torch.tensor(0.).to(device)
+            for param in model.parameters():
+                l1_reg += torch.norm(param, 1)
+            loss += l1_lambda * l1_reg
+
             loss.backward()
             optimizer.step()
             scheduler.step()
