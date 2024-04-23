@@ -1,11 +1,14 @@
 import urllib.request
 import timm
+from timm.data import resolve_data_config
 import torch.nn as nn
 import torch
 import time
 from torchvision.transforms import Compose, Resize, Lambda, Normalize
 
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
+def repeat_channels(x):
+    return x.repeat(3, 1, 1)
 
 class MobileNetV3TL(nn.Module):
     def __init__(self, path=None, full=True, dropout=0.2):
@@ -50,13 +53,13 @@ class MobileNetV3TL(nn.Module):
             else:
                 self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
         
-        self.config = resolve_data_config({}, model=model)
+        self.config = resolve_data_config({}, model=self.model)
         self.transform = Compose([
             Resize((self.config['input_size'][1], self.config['input_size'][2])),
-            Lambda(lambda x: x.repeat(3, 1, 1)),  # Replicate the channel to simulate RGB
+            Lambda(repeat_channels),  # Replicate the channel to simulate RGB
             Normalize(mean=self.config['mean'], std=self.config['std'])
         ])
-        
+
     def forward(self, x):
         return self.model(x)
     
