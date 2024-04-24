@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--full', default=False, help='Use full TL model')
     parser.add_argument('--batch', default=-1, help='Batch size')
     parser.add_argument('--workers', default=6, help='Workers to use for data loading')
-    parser.add_argument('--save', default="./Data/models/model1", help='Name of directory to save model weights')
+    parser.add_argument('--save', default="model1", help='Name of directory to save model weights')
     parser.add_argument('--model', default="mnv3tl", help=f"Options: {[model for model in models]}")
 
     args = parser.parse_args()
