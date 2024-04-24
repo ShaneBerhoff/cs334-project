@@ -43,7 +43,7 @@ class EfficientNetV2B0TL(nn.Module):
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
-        return f"effnetv2b0tl"
+        return f"env2b0tl"
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
