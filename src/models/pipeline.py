@@ -2,6 +2,7 @@ import models.mobilenetv3_tl as mnv3tl
 import models.efficientnetv2b0_tl as env2b0tl
 import models.inceptionv3_tl as inv3tl
 import models.densenet121_tl as dn121tl
+from models.load_model import load_best_model
 from data_loader import get_loaders
 import os
 import time
@@ -33,6 +34,8 @@ def run_pipeline(model_info):
     print(f"Train time: {time.time() - start}")
 
     # predict
+    # load best epoch
+    model, _, test_dl = load_best_model(model_info, 6)
     start = time.time()
     model_info["package"].predict(model, test_dl)
     print(f"Predict time: {time.time() - start}")
@@ -43,7 +46,7 @@ models = {
             "model": mnv3tl.MobileNetV3TL,
             "train": mnv3tl.train,
             "predict": mnv3tl.predict,
-            "path": "mnv3tl-pipeline",
+            "path": "mnv3tl",
             "batch": 64,
             "epochs": 40,
             "patience": 10,
@@ -55,7 +58,7 @@ models = {
             "model": env2b0tl.EfficientNetV2B0TL,
             "train": env2b0tl.train,
             "predict": env2b0tl.predict,
-            "path": "env2b0tl-pipeline",
+            "path": "env2b0tl",
             "batch": 64,
             "epochs": 40,
             "patience": 10,
@@ -67,7 +70,7 @@ models = {
             "model": inv3tl.InceptionV3TL,
             "train": inv3tl.train,
             "predict": inv3tl.predict,
-            "path": "inv3tl-pipeline",
+            "path": "inv3tl",
             "batch": 32,
             "epochs": 30,
             "patience": 7,
@@ -79,7 +82,7 @@ models = {
         #     "model": dn121tl.DenseNet121TL,
         #     "train": dn121tl.train,
         #     "predict": dn121tl.predict,
-        #     "path": "dn121tl-pipeline",
+        #     "path": "dn121tl",
         #     "batch": 64,
         #     "epochs": 30,
         #     "patience": 8,
