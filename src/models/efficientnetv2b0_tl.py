@@ -12,16 +12,16 @@ def repeat_channels(x):
     return x.expand(3, -1, -1)
 
 # optimal load seems to be batch size 32, workers 6 - minimal fluctuation in CUDA usage
-class EfficientNetV2B3TL(nn.Module):
+class EfficientNetV2B0TL(nn.Module):
     def __init__(self, input_path=None, save_path="./Data/models/model1"):
-        super(EfficientNetV2B3TL, self).__init__()
+        super(EfficientNetV2B0TL, self).__init__()
         self.save_path = save_path
 
         if input_path is not None:
-            self.model = timm.create_model('tf_efficientnetv2_b3.in1k', pretrained=False, num_classes=CLASSES)
+            self.model = timm.create_model('tf_efficientnetv2_b0.in1k', pretrained=False, num_classes=CLASSES)
             self.model.load_state_dict(torch.load(input_path))
         else:
-            self.model = timm.create_model('tf_efficientnetv2_b3.in1k', pretrained=True, num_classes=CLASSES)
+            self.model = timm.create_model('tf_efficientnetv2_b0.in1k', pretrained=True, num_classes=CLASSES)
         
         self.config = resolve_data_config({}, model=self.model)
 
@@ -43,7 +43,7 @@ class EfficientNetV2B3TL(nn.Module):
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
-        return f"effnetv2b3tl"
+        return f"effnetv2b0tl"
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
