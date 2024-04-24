@@ -54,7 +54,7 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
                                                     steps_per_epoch=len(train_dl),
-                                                    epochs=max_epochs, anneal_strategy='linear')
+                                                    epochs=max_epochs, anneal_strategy='cos')
     
     best_val_loss = float('inf')
     epochs_without_improvement = 0

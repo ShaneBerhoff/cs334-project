@@ -94,10 +94,10 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
                                                     steps_per_epoch=len(train_dl),
-                                                    epochs=max_epochs, anneal_strategy='linear')
+                                                    epochs=max_epochs, anneal_strategy='cos')
     
     best_val_loss = float('inf')
     epochs_without_improvement = 0
@@ -137,6 +137,8 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
         
         # Validation
         val_loss = 0.0
+        val_correct_prediction = 0
+        val_total_prediction = 0
         model.eval()
         with torch.no_grad():
             for inputs, labels in val_dl:
@@ -145,9 +147,13 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
                 val_loss += loss.item()
+                _, prediction = torch.max(outputs, 1)
+                val_correct_prediction += (prediction == labels).sum().item()
+                val_total_prediction += labels.size(0)
 
         val_loss /= len(val_dl)
-        print(f"Validation Loss: {val_loss:.4f}")
+        val_acc = val_correct_prediction / val_total_prediction
+        print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_acc:.4f}")
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
