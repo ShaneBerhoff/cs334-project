@@ -1,5 +1,6 @@
 import models.mobilenetv3_tl as mnv3tl
 import models.efficientnetv2b0_tl as env2b0tl
+import models.efficientnetv2b1_tl as env2b1tl
 import models.inceptionv3_tl as inv3tl
 import models.densenet121_tl as dn121tl
 from models.load_model import load_best_model
@@ -64,6 +65,18 @@ models = {
             "patience": 10,
             "n_mels": 192, # required dimension of 192x192
             "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
+        },
+        "env2b1tl": {
+            "package": env2b1tl,
+            "model": env2b1tl.EfficientNetV2B1TL,
+            "train": env2b1tl.train,
+            "predict": env2b1tl.predict,
+            "path": "env2b1tl",
+            "batch": 64,
+            "epochs": 40,
+            "patience": 10,
+            "n_mels": 224, # required dimension of 224x224
+            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         },
         "inv3tl": {
             "package": inv3tl,
