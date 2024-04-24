@@ -4,12 +4,13 @@ import os
 import metadata
 import util
 import torch
+from torch.utils.data import Subset
 
 # ----------------------------
 # Sound Dataset
 # ----------------------------
 class SoundDS(Dataset):
-    def __init__(self, data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks):
+    def __init__(self, data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform):
         self.data_path = str(data_path)
         self.shift_pct = shift_pct
         self.n_mels = n_mels
@@ -18,7 +19,7 @@ class SoundDS(Dataset):
         self.max_mask_pct = max_mask_pct
         self.n_masks = n_masks
         self.len = len([name for name in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, name))])
-                        
+        self.transform = transform
     # ----------------------------
     # Number of items in dataset
     # ----------------------------
@@ -47,24 +48,58 @@ class SoundDS(Dataset):
         # Augment spectrogram
         aug_sgram = AudioUtil.spectro_augment(sgram, self.max_mask_pct, n_freq_masks=self.n_masks, n_time_masks=self.n_masks)
 
+        # Convert spectrogram to an image and apply final transformations
+        if self.transform:
+            aug_sgram = self.transform(aug_sgram)
+
         return aug_sgram, classID
 
 
-def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2):
+def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
     data_path = util.from_base_path("/Data/tensors/")
-    myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks)
+    myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform)
 
     # Random split of 80:20 between training and validation
     num_items = len(myds)
     num_train = round(num_items * split_ratio)
     num_val = num_items - num_train
     train_ds, val_ds = random_split(myds, [num_train, num_val])
+    
+    train_indices = train_ds.indices
+    val_indices = val_ds.indices
 
     # Create training and validation data loaders
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
     val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
-    return train_dl, val_dl
+    return train_dl, val_dl, train_indices, val_indices
+
+def get_existing_loader(model_path="/Data/models/model1", batch_size=32, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
+    data_path = util.from_base_path("/Data/tensors/")
+    myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform)
+
+    # Get train subset
+    with open(os.path.join(model_path, "train_indices.txt"), 'r') as file:
+        indices1 = file.readlines()
+        # Convert each line to an integer
+    indices1 = [int(idx.strip()) for idx in indices1]
+    
+    train_ds = Subset(myds, indices1)
+    
+    # Get test subset
+    with open(os.path.join(model_path, "test_indices.txt"), 'r') as file:
+        indices = file.readlines()
+        # Convert each line to an integer
+    indices = [int(idx.strip()) for idx in indices]
+    
+    test_ds = Subset(myds, indices)
+    
+    # Create loaders
+    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
+    test_dl = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
+
+    return train_dl, test_dl
+
 
 # Check for working
 #if __name__ == '__main__':

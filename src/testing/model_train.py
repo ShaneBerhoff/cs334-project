@@ -1,6 +1,6 @@
-from model_arch import TuningAudioClassifier
-from predict import predict
-from training import training
+from testing.model_arch import TuningAudioClassifier
+from testing.predict import predict
+from testing.training import training
 import torch
 from data_loader import get_loaders
 import time
@@ -20,7 +20,7 @@ def main():
 
     # train model
     start = time.time()
-    training(model, trainDL, 20, device)
+    training(model, trainDL, 5, device)
     print(f"Train time: {time.time() - start}")
 
     # predictions

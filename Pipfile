@@ -10,6 +10,7 @@ matplotlib = "*"
 pandas = "*"
 torch = "*"
 torchaudio = "*"
+timm = "*"
 
 [dev-packages]
 
