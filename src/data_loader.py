@@ -20,15 +20,11 @@ class SoundDS(Dataset):
         self.n_masks = n_masks
         self.len = len([name for name in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, name))])
         self.transform = transform
-    # ----------------------------
-    # Number of items in dataset
-    # ----------------------------
+        self.val_indices = None
+    
     def __len__(self):
         return self.len    
-        
-    # ----------------------------
-    # Get i'th item in dataset
-    # ----------------------------
+
     def __getitem__(self, idx):
         # tensorfile
         tensorFile = torch.load(os.path.join(self.data_path, f'data_{idx}.pt'))
@@ -45,8 +41,12 @@ class SoundDS(Dataset):
         shift_aud = AudioUtil.time_shift(audio, self.shift_pct)
         # Create spectrogram
         sgram = AudioUtil.spectro_gram(shift_aud, self.n_mels, self.n_fft, self.hop_len)
+
         # Augment spectrogram
-        aug_sgram = AudioUtil.spectro_augment(sgram, self.max_mask_pct, n_freq_masks=self.n_masks, n_time_masks=self.n_masks)
+        if idx in self.val_indices:
+            aug_sgram = sgram
+        else:
+            aug_sgram = AudioUtil.spectro_augment(sgram, self.max_mask_pct, n_freq_masks=self.n_masks, n_time_masks=self.n_masks)
 
         # Convert spectrogram to an image and apply final transformations
         if self.transform:
@@ -54,25 +54,31 @@ class SoundDS(Dataset):
 
         return aug_sgram, classID
 
+    def set_val_indices(self, val_indices):
+        self.val_indices = val_indices
+
 
 def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
     data_path = util.from_base_path("/Data/tensors/")
     myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform)
 
-    # Random split of 80:20 between training and validation
     num_items = len(myds)
     num_train = round(num_items * split_ratio)
     num_val = num_items - num_train
-    train_ds, val_ds = random_split(myds, [num_train, num_val])
-    
-    train_indices = train_ds.indices
-    val_indices = val_ds.indices
+    train_indices, val_indices = random_split(range(num_items), [num_train, num_val])
+    myds.set_val_indices(val_indices)
+    print(train_indices, val_indices)
+
+    # Create separate datasets for training and validation
+    train_ds = Subset(myds, train_indices)
+    val_ds = Subset(myds, val_indices)
 
     # Create training and validation data loaders
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
     val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
     return train_dl, val_dl, train_indices, val_indices
+
 
 def get_existing_loader(model_path="/Data/models/model1", batch_size=32, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
     data_path = util.from_base_path("/Data/tensors/")
