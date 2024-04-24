@@ -15,7 +15,7 @@ def run_pipeline(model_info):
     
     model = model_info["model"](save_path=save_path)
     # train_dl, test_dl, train_index, test_index = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
-    train_dl, test_dl, train_index, test_index = get_loaders(batch_size=model_info["batch"], num_workers=6, split_ratio=0.9, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
+    train_dl, test_dl, train_index, test_index = get_loaders(batch_size=model_info["batch"], num_workers=6, split_ratio=0.9, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=model.transform)
     
     with open(f'{save_path}/train_indices.txt', 'w') as f:
         for index in train_index:
@@ -49,6 +49,8 @@ def main():
             "batch": 64,
             "epochs": 100,
             "patience": 20,
+            "n_mels": 224, # required dimension of 224x224
+            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         },
         "env2b0tl": {
             "package": env2b0tl,
@@ -59,6 +61,8 @@ def main():
             "batch": 64,
             "epochs": 100,
             "patience": 20,
+            "n_mels": 192, # required dimension of 192x192
+            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
         },
         "inv3tl": {
             "package": inv3tl,
@@ -69,6 +73,8 @@ def main():
             "batch": 32,
             "epochs": 150,
             "patience": 20,
+            "n_mels": 299, # required dimension of 299x299
+            "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
         },
         "dn121tl": {
             "package": dn121tl,
@@ -79,6 +85,8 @@ def main():
             "batch": 64,
             "epochs": 150,
             "patience": 20,
+            "n_mels": 224, #required dimension of 224x224
+            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         }
     }
 

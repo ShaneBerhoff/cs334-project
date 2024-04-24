@@ -9,7 +9,7 @@ hop = int((sr*(duration_ms/1000))//(224-1)-5) # magic formula
 
 def main():
     # Data loader
-    trainDL, _ = get_loaders(n_mels=dimension, n_fft=2048, hop_len=hop)
+    trainDL, _, _, _ = get_loaders(n_mels=dimension, n_fft=2048, hop_len=hop)
 
     # Go through all data
     data = []
