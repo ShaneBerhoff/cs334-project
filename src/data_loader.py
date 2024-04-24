@@ -98,6 +98,7 @@ def get_existing_loader(model_path="/Data/models/model1", batch_size=32, num_wor
     indices = [int(idx.strip()) for idx in indices]
     
     test_ds = Subset(myds, indices)
+    myds.set_val_indices(indices)
     
     # Create loaders
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
