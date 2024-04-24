@@ -39,7 +39,7 @@ class EfficientNetV2B0TL(nn.Module):
         weights_path = os.path.join(self.save_path, "Weights")
         os.makedirs(weights_path, exist_ok=True)
         # Construct path and save
-        full_path = os.path.join(weights_path, f"inv3tl-e{epoch}.pt")
+        full_path = os.path.join(weights_path, f"{self.name()}-e{epoch}.pt")
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
