@@ -3,6 +3,7 @@ import models.efficientnetv2b0_tl as env2b0tl
 import models.efficientnetv2b1_tl as env2b1tl
 import models.inceptionv3_tl as inv3tl
 import models.densenet121_tl as dn121tl
+import models.homebrew as homebrew
 from models.load_model import load_best_model
 from data_loader import get_loaders
 import os
@@ -47,10 +48,10 @@ models = {
             "model": mnv3tl.MobileNetV3TL,
             "train": mnv3tl.train,
             "predict": mnv3tl.predict,
-            "path": "mnv3tl",
+            "path": "mnv3tl-pipeline2",
             "batch": 64,
-            "epochs": 40,
-            "patience": 10,
+            "epochs": 15,
+            "patience": 5,
             "n_mels": 224, # required dimension of 224x224
             "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         },
@@ -59,10 +60,10 @@ models = {
             "model": env2b0tl.EfficientNetV2B0TL,
             "train": env2b0tl.train,
             "predict": env2b0tl.predict,
-            "path": "env2b0tl",
+            "path": "env2b0tl-pipeline2",
             "batch": 64,
-            "epochs": 40,
-            "patience": 10,
+            "epochs": 18,
+            "patience": 5,
             "n_mels": 192, # required dimension of 192x192
             "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
         },
@@ -71,9 +72,9 @@ models = {
             "model": env2b1tl.EfficientNetV2B1TL,
             "train": env2b1tl.train,
             "predict": env2b1tl.predict,
-            "path": "env2b1tl",
+            "path": "env2b1tl-pipeline2",
             "batch": 64,
-            "epochs": 40,
+            "epochs": 10,
             "patience": 10,
             "n_mels": 192, # required dimension of 192x192
             "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
@@ -83,13 +84,25 @@ models = {
             "model": inv3tl.InceptionV3TL,
             "train": inv3tl.train,
             "predict": inv3tl.predict,
-            "path": "inv3tl",
+            "path": "inv3tl-pipeline2",
             "batch": 32,
-            "epochs": 30,
-            "patience": 7,
+            "epochs": 15,
+            "patience": 5,
             "n_mels": 299, # required dimension of 299x299
             "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
         },
+        "homebrew": {
+            "package": homebrew,
+            "model": homebrew.TuningAudioClassifier,
+            "train": homebrew.train,
+            "predict": homebrew.predict,
+            "path": "homebrew-pipeline2",
+            "batch": 64,
+            "epochs": 50,
+            "patience": 5,
+            "n_mels": 128,
+            "hop_len": 512
+        }
         # "dn121tl": {
         #     "package": dn121tl,
         #     "model": dn121tl.DenseNet121TL,

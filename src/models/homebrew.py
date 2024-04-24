@@ -5,6 +5,7 @@ import torch
 from torch.nn import init
 import time
 from data_loader import get_loaders
+from models.load_model import load_best_model
 import util
 
 # ----------------------------
@@ -207,7 +208,9 @@ def main(batch, workers, save_path, epoch):
     print(f"Train time: {time.time() - start}")
 
     # predict
-    start = time.time()
+    # CURRENTLY DOESN'T LOAD BEST EPOCH
+    # model, _, test_dl = load_best_model(model_info, workers)
+    # start = time.time()
     predict(model, test_dl)
     print(f"Predict time: {time.time() - start}")
     
@@ -219,4 +222,4 @@ if __name__ == '__main__':
     parser.add_argument('--save', default="homebrew", help='Name of directory to save model weights')
     args = parser.parse_args()
 
-    main(batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("/Data/models"), args.save), epoch=args.max_epochs)
+    main(batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("/Data/models"), args.save), epoch=int(args.max_epochs))
