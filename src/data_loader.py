@@ -74,10 +74,18 @@ def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_
 
     return train_dl, val_dl, train_indices, val_indices
 
-def get_test_loader(model_path="/Data/Model1", batch_size=32, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
+def get_existing_loader(model_path="/Data/models/model1", batch_size=32, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
     data_path = util.from_base_path("/Data/tensors/")
     myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform)
 
+    # Get train subset
+    with open(os.path.join(model_path, "train_indices.txt"), 'r') as file:
+        indices1 = file.readlines()
+        # Convert each line to an integer
+    indices1 = [int(idx.strip()) for idx in indices1]
+    
+    train_ds = Subset(myds, indices1)
+    
     # Get test subset
     with open(os.path.join(model_path, "test_indices.txt"), 'r') as file:
         indices = file.readlines()
@@ -86,10 +94,11 @@ def get_test_loader(model_path="/Data/Model1", batch_size=32, num_workers=4, shi
     
     test_ds = Subset(myds, indices)
     
-    # Create test loader
+    # Create loaders
+    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
     test_dl = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
-    return test_dl
+    return train_dl, test_dl
 
 
 # Check for working
