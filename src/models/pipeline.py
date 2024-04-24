@@ -75,8 +75,8 @@ models = {
             "batch": 64,
             "epochs": 40,
             "patience": 10,
-            "n_mels": 224, # required dimension of 224x224
-            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
+            "n_mels": 192, # required dimension of 192x192
+            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
         },
         "inv3tl": {
             "package": inv3tl,
