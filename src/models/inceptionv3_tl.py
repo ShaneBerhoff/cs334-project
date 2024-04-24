@@ -1,4 +1,3 @@
-import urllib.request
 import timm
 from timm.data import resolve_data_config
 import torch.nn as nn

@@ -4,51 +4,29 @@ import torch.nn as nn
 import torch
 import time
 import os
+from timm.data.transforms_factory import create_transform
 from torchvision.transforms import Compose, Resize, Lambda, Normalize
 
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
     return x.expand(3, -1, -1)
 
-class MobileNetV3TL(nn.Module):
-    def __init__(self, input_path=None, save_path="./Data/models/model1", full=False, dropout=0.2):
-        super(MobileNetV3TL, self).__init__()
-        self.full = full
-        self.dropout = dropout
+# optimal load seems to be batch size 32, workers 6 - minimal fluctuation in CUDA usage
+class DenseNet121TL(nn.Module):
+    def __init__(self, input_path=None, save_path="./Data/models/model1"):
+        super(DenseNet121TL, self).__init__()
         self.save_path = save_path
 
         if input_path is not None:
-            self.model = timm.create_model('mobilenetv3_large_100', pretrained=False)
-
-            if full:
-                self.model.classifier = nn.Sequential(
-                    nn.Linear(self.model.classifier.in_features, 12), # TODO: Change 40 to a better number
-                    nn.ReLU(),
-                    nn.Dropout(p=self.dropout),
-                    nn.Linear(12, CLASSES)
-                )
-            else:
-                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
-
+            self.model = timm.create_model('densenet121', pretrained=False, num_classes=CLASSES)
             self.model.load_state_dict(torch.load(input_path))
         else:
-            self.model = timm.create_model('mobilenetv3_large_100', pretrained=True)
-            # for param in self.model.parameters():
-            #     param.requires_grad = False
-
-            if full:
-                self.model.classifier = nn.Sequential(
-                    nn.Linear(self.model.classifier.in_features, 12), # TODO: Change 40 to a better number
-                    nn.ReLU(),
-                    nn.Dropout(p=self.dropout),
-                    nn.Linear(12, CLASSES)
-                )
-            else:
-                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
+            self.model = timm.create_model('densenet121', pretrained=True, num_classes=CLASSES)
         
         self.config = resolve_data_config({}, model=self.model)
+
         self.transform = Compose([
-            Resize((self.config['input_size'][1], self.config['input_size'][2])),
+            Resize(self.config['input_size'][1:]),
             Lambda(repeat_channels),  # Replicate the channel to simulate RGB
             Normalize(mean=self.config['mean'], std=self.config['std'])
         ])
@@ -61,11 +39,11 @@ class MobileNetV3TL(nn.Module):
         weights_path = os.path.join(self.save_path, "Weights")
         os.makedirs(weights_path, exist_ok=True)
         # Construct path and save
-        full_path = os.path.join(weights_path, f"mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
+        full_path = os.path.join(weights_path, f"inv3tl-e{epoch}.pt")
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
-        return f"mnv3tl{'-full' if self.full else ''}"
+        return f"dn121tl"
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
