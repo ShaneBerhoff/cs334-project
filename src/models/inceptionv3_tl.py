@@ -12,6 +12,7 @@ CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
     return x.expand(3, -1, -1)
 
+# optimal load seems to be batch size 32, workers 6 - minimal fluctuation in CUDA usage
 class InceptionV3TL(nn.Module):
     def __init__(self, input_path=None, save_path="./Data/models/model1"):
         super(InceptionV3TL, self).__init__()
@@ -19,9 +20,18 @@ class InceptionV3TL(nn.Module):
 
         if input_path is not None:
             self.model = timm.create_model('inception_v3', pretrained=False, num_classes=CLASSES)
+
+            for name, param in self.model.named_parameters():
+                if name.split(".")[0] not in ["Mixed_7a", "Mixed_7b", "Mixed_7c"]:
+                    param.requires_grad = False
+
             self.model.load_state_dict(torch.load(input_path))
         else:
             self.model = timm.create_model('inception_v3', pretrained=True, num_classes=CLASSES)
+
+            for name, param in self.model.named_parameters():
+                if name.split(".")[0] not in ["Mixed_7a", "Mixed_7b", "Mixed_7c"]:
+                    param.requires_grad = False
         
         self.config = resolve_data_config({}, model=self.model)
         self.transform = Compose([
@@ -38,7 +48,7 @@ class InceptionV3TL(nn.Module):
         weights_path = os.path.join(self.save_path, "Weights")
         os.makedirs(weights_path, exist_ok=True)
         # Construct path and save
-        full_path = os.path.join(weights_path, f"mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
+        full_path = os.path.join(weights_path, f"inv3tl-e{epoch}.pt")
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
