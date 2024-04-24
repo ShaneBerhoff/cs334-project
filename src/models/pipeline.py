@@ -75,8 +75,7 @@ def main():
     }
 
     for model in models:
-        print(f"Running train and predict on {model} with batch size {models[model]['batch']} and 6 workers")
-        run_pipeline(model)
+        run_pipeline(models[model])
 
 
 if __name__ == '__main__':
