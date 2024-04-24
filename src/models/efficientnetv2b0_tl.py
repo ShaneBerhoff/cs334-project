@@ -11,7 +11,7 @@ CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
     return x.expand(3, -1, -1)
 
-# optimal load seems to be batch size 32, workers 6 - minimal fluctuation in CUDA usage
+# optimal load seems to be batch size 64, workers 6 - minimal fluctuation in CUDA usage and perfect fit in memory
 class EfficientNetV2B0TL(nn.Module):
     def __init__(self, input_path=None, save_path="./Data/models/model1"):
         super(EfficientNetV2B0TL, self).__init__()

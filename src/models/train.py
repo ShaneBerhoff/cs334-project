@@ -1,6 +1,7 @@
 import models.mobilenetv3_tl as mnv3tl
 import models.inceptionv3_tl as inv3tl
-import models.homebrew
+import models.densenet121_tl as dn121tl
+import models.efficientnetv2b0_tl as env2b0tl
 from data_loader import get_loaders
 import os
 import argparse
@@ -12,7 +13,7 @@ def main(full, batch, workers, save_path):
     os.makedirs(save_path, exist_ok=True)
     
     # model = mnv3tl.MobileNetV3TL(full=full, save_path=save_path)
-    model = inv3tl.InceptionV3TL(save_path=save_path)
+    model = dn121tl.DenseNet121TL(save_path=save_path)
     # train_dl, test_dl, train_index, test_index = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
     train_dl, test_dl, train_index, test_index = get_loaders(batch_size=batch, num_workers=workers, split_ratio=0.9, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
     
@@ -28,12 +29,12 @@ def main(full, batch, workers, save_path):
 
     # train
     start = time.time()
-    inv3tl.train(model, train_dl, test_dl, 50)
+    dn121tl.train(model, train_dl, test_dl, 50)
     print(f"Train time: {time.time() - start}")
 
     # predict
     start = time.time()
-    inv3tl.predict(model, test_dl)
+    dn121tl.predict(model, test_dl)
     print(f"Predict time: {time.time() - start}")
 
 
