@@ -21,7 +21,7 @@ class InceptionV3TL(nn.Module):
             self.model = timm.create_model('inception_v3', pretrained=False, num_classes=CLASSES)
 
             for name, param in self.model.named_parameters():
-                if name.split(".")[0] not in ["Mixed_7a", "Mixed_7b", "Mixed_7c"]:
+                if name.split(".")[0] not in ["Mixed_6a", "Mixed_6b", "Mixed_6c" "Mixed_6d", "Mixed_6e", "Mixed_7a", "Mixed_7b", "Mixed_7c"]:
                     param.requires_grad = False
 
             self.model.load_state_dict(torch.load(input_path))
@@ -29,7 +29,7 @@ class InceptionV3TL(nn.Module):
             self.model = timm.create_model('inception_v3', pretrained=True, num_classes=CLASSES)
 
             for name, param in self.model.named_parameters():
-                if name.split(".")[0] not in ["Mixed_7a", "Mixed_7b", "Mixed_7c"]:
+                if name.split(".")[0] not in ["Mixed_6a", "Mixed_6b", "Mixed_6c" "Mixed_6d", "Mixed_6e", "Mixed_7a", "Mixed_7b", "Mixed_7c"]:
                     param.requires_grad = False
         
         self.config = resolve_data_config({}, model=self.model)
