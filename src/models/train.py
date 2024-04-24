@@ -36,9 +36,9 @@ if __name__ == '__main__':
     parser.add_argument('--full', default=False, help='Use full TL model')
     parser.add_argument('--batch', default=32, help='Batch size')
     parser.add_argument('--workers', default=4, help='Workers to use for data loading')
-    parser.add_argument('--save', default="./Data/Model1", help='Name of directory to save model weights')
+    parser.add_argument('--save', default="./Data/models/model1", help='Name of directory to save model weights')
     args = parser.parse_args()
 
     print(f"Running train and predict on{' full' if args.full else ''} mobilenetv3_tl with batch size {args.batch} and {args.workers} workers")
 
-    main(full=bool(args.full), batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("/Data/"), args.save))
+    main(full=bool(args.full), batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("/Data/models"), args.save))

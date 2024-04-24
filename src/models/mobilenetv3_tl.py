@@ -12,7 +12,7 @@ def repeat_channels(x):
     return x.repeat(3, 1, 1)
 
 class MobileNetV3TL(nn.Module):
-    def __init__(self, input_path=None, save_path="./Model/", full=True, dropout=0.2):
+    def __init__(self, input_path=None, save_path="./Data/models/model1", full=True, dropout=0.2):
         super(MobileNetV3TL, self).__init__()
         self.full = full
         self.dropout = dropout
