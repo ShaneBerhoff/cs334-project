@@ -9,10 +9,10 @@ from torchvision.transforms import Compose, Resize, Lambda, Normalize
 
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
-    return x.repeat(3, 1, 1)
+    return x.expand(3, -1, -1)
 
 class MobileNetV3TL(nn.Module):
-    def __init__(self, input_path=None, save_path="./Data/models/model1", full=True, dropout=0.2):
+    def __init__(self, input_path=None, save_path="./Data/models/model1", full=False, dropout=0.2):
         super(MobileNetV3TL, self).__init__()
         self.full = full
         self.dropout = dropout
@@ -102,12 +102,6 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
             outputs = model(inputs)
             loss = criterion(outputs, labels)
 
-            # # L1 regularization
-            # l1_reg = torch.tensor(0.).to(device)
-            # for param in model.parameters():
-            #     l1_reg += torch.norm(param, 1)
-            # loss += l1_lambda * l1_reg
-
             loss.backward()
             optimizer.step()
             scheduler.step()
@@ -174,38 +168,3 @@ def predict(model, val_dl):
 
     acc = correct_prediction / total_prediction
     print(f"Accuracy: {acc:.4f}, Total items: {total_prediction}")
-
-
-if __name__ == '__main__':
-    import os
-    from PIL import Image
-    from timm.data import resolve_data_config
-    from timm.data.transforms_factory import create_transform
-    
-    model = MobileNetV3TL()
-
-    # load image
-    dogfile = "dog.jpg"
-    if not os.path.exists(dogfile):
-        import urllib
-        urllib.request.urlretrieve("https://github.com/pytorch/hub/raw/master/images/dog.jpg", dogfile)
-    config = resolve_data_config({}, model=model)
-    transform = create_transform(**config)
-    img = Image.open(dogfile).convert('RGB')
-    tensor = transform(img).unsqueeze(0)
-
-    # predict
-    with torch.no_grad():
-        out = model(tensor)
-    probas = torch.nn.functional.softmax(out[0], dim=0)
-    print(probas.shape)
-
-    # print top 5
-    classfile = "imagenet_classes.txt"
-    if not os.path.exists(classfile):
-        urllib.request.urlretrieve("https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt", classfile)
-    with open(classfile) as f:
-        classes = [line.strip() for line in f.readlines()]
-    top5_prob, top5_catid = torch.topk(probas, 5)
-    for i in range(5):
-        print(f"Class: {classes[top5_catid[i]]}, Probability: {top5_prob[i].item()}")
