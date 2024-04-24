@@ -37,18 +37,18 @@ class SoundDS(Dataset):
         #rechan = AudioUtil.rechannel(reaud, self.channel)
         #dur_aud = AudioUtil.pad_trunc(rechan, self.duration)
         
-        # Shift audio
-        shift_aud = AudioUtil.time_shift(audio, self.shift_pct)
-        # Create spectrogram
-        sgram = AudioUtil.spectro_gram(shift_aud, self.n_mels, self.n_fft, self.hop_len)
-
-        # Augment spectrogram
+        # Augment audio only if train data
         if idx in self.val_indices:
-            aug_sgram = sgram
+            # Create spectrogram
+            aug_sgram = AudioUtil.spectro_gram(audio, self.n_mels, self.n_fft, self.hop_len)
         else:
+            # Shift audio
+            shift_aud = AudioUtil.time_shift(audio, self.shift_pct)
+            # Create spectrogram
+            sgram = AudioUtil.spectro_gram(shift_aud, self.n_mels, self.n_fft, self.hop_len)
             aug_sgram = AudioUtil.spectro_augment(sgram, self.max_mask_pct, n_freq_masks=self.n_masks, n_time_masks=self.n_masks)
 
-        # Convert spectrogram to an image and apply final transformations
+        # Apply final transformation
         if self.transform:
             aug_sgram = self.transform(aug_sgram)
 
