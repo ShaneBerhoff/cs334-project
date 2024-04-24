@@ -67,7 +67,6 @@ def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_
     num_val = num_items - num_train
     train_indices, val_indices = random_split(range(num_items), [num_train, num_val])
     myds.set_val_indices(val_indices)
-    print(train_indices, val_indices)
 
     # Create separate datasets for training and validation
     train_ds = Subset(myds, train_indices)
