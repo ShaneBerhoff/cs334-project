@@ -57,7 +57,6 @@ class MobileNetV3TL(nn.Module):
     def forward(self, x):
         return self.model(x)
     
-    # TODO: test
     def save(self, epoch=0):
         # Create directory if it doesn't exist
         weights_path = os.path.join(self.save_path, "Weights")
@@ -67,10 +66,7 @@ class MobileNetV3TL(nn.Module):
         torch.save(self.model.state_dict(), full_path)
 
 
-# TODO: add early stopping, dropout, l1/l2 and retrain
-# early stopping first so we can use pretrained weights, then l1/l2 from scratch
-# performance sucks with dropout and l1/l2
-def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
+def train(model, train_dl, val_dl, max_epochs, patience=5):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
@@ -93,9 +89,6 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
 
         for _, (inputs, labels) in enumerate(train_dl):
             inputs, labels = inputs.to(device), labels.to(device)
-            # Batch normalizaion
-            inputs_m, inputs_s = inputs.mean(), inputs.std()
-            inputs = (inputs - inputs_m) / inputs_s
 
             optimizer.zero_grad()
 
@@ -125,8 +118,6 @@ def train(model, train_dl, val_dl, max_epochs, patience=5, l1_lambda=0.01):
         with torch.no_grad():
             for inputs, labels in val_dl:
                 inputs, labels = inputs.to(device), labels.to(device)
-                inputs_m, inputs_s = inputs.mean(), inputs.std()
-                inputs = (inputs - inputs_m) / inputs_s
 
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
@@ -158,8 +149,6 @@ def predict(model, val_dl):
     with torch.no_grad():
         for data in val_dl:
             inputs, labels = data[0].to(device), data[1].to(device)
-            inputs_m, inputs_s = inputs.mean(), inputs.std()
-            inputs = (inputs - inputs_m) / inputs_s
 
             outputs = model(inputs)
             _, prediction = torch.max(outputs, 1)
