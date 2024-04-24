@@ -19,9 +19,15 @@ class DenseNet121TL(nn.Module):
 
         if input_path is not None:
             self.model = timm.create_model('densenet121', pretrained=False, num_classes=CLASSES)
+            for name, param in self.model.named_parameters():
+                if name[:20] not in ["features.denseblock2", "features.denseblock3", "features.denseblock4", "features.transition3", "features.transition2", "features.transition1"]:
+                    param.requires_grad = False
             self.model.load_state_dict(torch.load(input_path))
         else:
             self.model = timm.create_model('densenet121', pretrained=True, num_classes=CLASSES)
+            for name, param in self.model.named_parameters():
+                if name[:20] not in ["features.denseblock2", "features.denseblock3", "features.denseblock4", "features.transition3", "features.transition2", "features.transition1"]:
+                    param.requires_grad = False
         
         self.config = resolve_data_config({}, model=self.model)
 
