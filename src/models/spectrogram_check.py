@@ -6,7 +6,7 @@ def main(T):
     for m in models:
         model_info = models[m]
         model = model_info["model"]()
-        train_dl, _, _, _ = get_loaders(batch_size=1, num_workers=6, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform={model.transform if T else None})
+        train_dl, _, _, _ = get_loaders(batch_size=1, num_workers=6, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=(model.transform if T else None))
         
         for sgram, _ in train_dl:
             print(f"Item in {model.name()} of shape: {sgram.shape}")
