@@ -41,4 +41,4 @@ if __name__ == '__main__':
 
     print(f"Running train and predict on{' full' if args.full else ''} mobilenetv3_tl with batch size {args.batch} and {args.workers} workers")
 
-    main(full=bool(args.full), batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("./Data/"), args.save))
+    main(full=bool(args.full), batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("/Data/"), args.save))
