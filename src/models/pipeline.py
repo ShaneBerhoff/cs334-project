@@ -29,7 +29,7 @@ def run_pipeline(model_info):
 
     # train
     start = time.time()
-    model_info["package"].train(model, train_dl, test_dl, 50)
+    model_info["package"].train(model, train_dl, test_dl, model_info["epochs"], patience=model_info["patience"])
     print(f"Train time: {time.time() - start}")
 
     # predict
@@ -46,7 +46,9 @@ def main():
             "train": mnv3tl.train,
             "predict": mnv3tl.predict,
             "path": "mnv3tl-pipeline",
-            "batch": 64
+            "batch": 64,
+            "epochs": 100,
+            "patience": 20,
         },
         "env2b0tl": {
             "package": env2b0tl,
@@ -54,7 +56,9 @@ def main():
             "train": env2b0tl.train,
             "predict": env2b0tl.predict,
             "path": "env2b0tl-pipeline",
-            "batch": 64
+            "batch": 64,
+            "epochs": 100,
+            "patience": 20,
         },
         "inv3tl": {
             "package": inv3tl,
@@ -62,7 +66,9 @@ def main():
             "train": inv3tl.train,
             "predict": inv3tl.predict,
             "path": "inv3tl-pipeline",
-            "batch": 32
+            "batch": 32,
+            "epochs": 150,
+            "patience": 20,
         },
         "dn121tl": {
             "package": dn121tl,
@@ -70,7 +76,9 @@ def main():
             "train": dn121tl.train,
             "predict": dn121tl.predict,
             "path": "dn121tl-pipeline",
-            "batch": 64
+            "batch": 64,
+            "epochs": 150,
+            "patience": 20,
         }
     }
 
