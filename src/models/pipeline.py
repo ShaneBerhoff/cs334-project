@@ -1,7 +1,7 @@
 import models.mobilenetv3_tl as mnv3tl
+import models.efficientnetv2b0_tl as env2b0tl
 import models.inceptionv3_tl as inv3tl
 import models.densenet121_tl as dn121tl
-import models.efficientnetv2b0_tl as env2b0tl
 from data_loader import get_loaders
 import os
 import time
@@ -45,8 +45,8 @@ models = {
             "predict": mnv3tl.predict,
             "path": "mnv3tl-pipeline",
             "batch": 64,
-            "epochs": 100,
-            "patience": 20,
+            "epochs": 40,
+            "patience": 10,
             "n_mels": 224, # required dimension of 224x224
             "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         },
@@ -57,8 +57,8 @@ models = {
             "predict": env2b0tl.predict,
             "path": "env2b0tl-pipeline",
             "batch": 64,
-            "epochs": 100,
-            "patience": 20,
+            "epochs": 40,
+            "patience": 10,
             "n_mels": 192, # required dimension of 192x192
             "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
         },
@@ -69,27 +69,27 @@ models = {
             "predict": inv3tl.predict,
             "path": "inv3tl-pipeline",
             "batch": 32,
-            "epochs": 150,
-            "patience": 20,
+            "epochs": 30,
+            "patience": 7,
             "n_mels": 299, # required dimension of 299x299
             "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
         },
-        "dn121tl": {
-            "package": dn121tl,
-            "model": dn121tl.DenseNet121TL,
-            "train": dn121tl.train,
-            "predict": dn121tl.predict,
-            "path": "dn121tl-pipeline",
-            "batch": 64,
-            "epochs": 150,
-            "patience": 20,
-            "n_mels": 224, #required dimension of 224x224
-            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
-        }
+        # "dn121tl": {
+        #     "package": dn121tl,
+        #     "model": dn121tl.DenseNet121TL,
+        #     "train": dn121tl.train,
+        #     "predict": dn121tl.predict,
+        #     "path": "dn121tl-pipeline",
+        #     "batch": 64,
+        #     "epochs": 30,
+        #     "patience": 8,
+        #     "n_mels": 224, #required dimension of 224x224
+        #     "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
+        # }
     }
 
-def main():
 
+def main():
     for model in models:
         run_pipeline(models[model])
 
