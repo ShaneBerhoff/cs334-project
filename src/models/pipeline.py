@@ -37,9 +37,7 @@ def run_pipeline(model_info):
     model_info["package"].predict(model, test_dl)
     print(f"Predict time: {time.time() - start}")
 
-
-def main():
-    models = {
+models = {
         "mnv3tl": {
             "package": mnv3tl,
             "model": mnv3tl.MobileNetV3TL,
@@ -89,6 +87,8 @@ def main():
             "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         }
     }
+
+def main():
 
     for model in models:
         run_pipeline(models[model])
