@@ -6,9 +6,7 @@ import util
 import torch
 from torch.utils.data import Subset
 
-# ----------------------------
-# Sound Dataset
-# ----------------------------
+
 class SoundDS(Dataset):
     def __init__(self, data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform):
         self.data_path = str(data_path)
@@ -42,13 +40,12 @@ class SoundDS(Dataset):
             # Create spectrogram
             aug_sgram = AudioUtil.spectro_gram(audio, self.n_mels, self.n_fft, self.hop_len)
         else:
-            # Shift audio
+            # Shift audio & create spectrogram
             shift_aud = AudioUtil.time_shift(audio, self.shift_pct)
-            # Create spectrogram
             sgram = AudioUtil.spectro_gram(shift_aud, self.n_mels, self.n_fft, self.hop_len)
             aug_sgram = AudioUtil.spectro_augment(sgram, self.max_mask_pct, n_freq_masks=self.n_masks, n_time_masks=self.n_masks)
 
-        # Apply final transformation
+        # Apply final normalized transformation
         if self.transform:
             aug_sgram = self.transform(aug_sgram)
 
@@ -83,36 +80,20 @@ def get_existing_loader(model_path="/Data/models/model1", batch_size=32, num_wor
     data_path = util.from_base_path("/Data/tensors/")
     myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform)
 
-    # Get train subset
+    # Get indices
     with open(os.path.join(model_path, "train_indices.txt"), 'r') as file:
-        indices1 = file.readlines()
-        # Convert each line to an integer
-    indices1 = [int(idx.strip()) for idx in indices1]
-    
-    train_ds = Subset(myds, indices1)
-    
-    # Get test subset
+        train_indices = [int(idx.strip()) for idx in file.readlines()]
     with open(os.path.join(model_path, "test_indices.txt"), 'r') as file:
-        indices = file.readlines()
-        # Convert each line to an integer
-    indices = [int(idx.strip()) for idx in indices]
+        val_indices = [int(idx.strip()) for idx in file.readlines()]
     
-    test_ds = Subset(myds, indices)
-    myds.set_val_indices(indices)
+    myds.set_val_indices(val_indices)
+
+    # Create separate datasets for training and validation
+    train_ds = Subset(myds, train_indices)
+    test_ds = Subset(myds, val_indices)
     
     # Create loaders
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
     test_dl = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
     return train_dl, test_dl
-
-
-# Check for working
-#if __name__ == '__main__':
-#    data_path = "/"
-#    df = metadata.Metadata(util.from_base_path("/Data/archive/")).getMetadata()
-#    print("Label counts (0 = sad, 1 = angry, 2 = disgust, 3 = fear, 4 = happy, 5 = neutral):\n",df["label"].value_counts())
-#    myds = SoundDS(df, data_path)
-#
-#    for i in range(5):
-#        util.save_spectrogram(myds[i][0], i)
