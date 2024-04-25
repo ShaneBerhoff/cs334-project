@@ -12,12 +12,9 @@ import util
 
 def run_pipeline(model_info):
     save_path = os.path.join(util.from_base_path("/Data/models"), model_info["path"])
-    
     os.makedirs(save_path, exist_ok=True)
     
-    
-    model = model_info["model"](save_path=save_path)
-    # train_dl, test_dl, train_index, test_index = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
+    model = model_info["model"](save_path=save_path, epoch_tuning=model_info["epoch_tuning"])
     train_dl, test_dl, train_index, test_index = get_loaders(batch_size=model_info["batch"], num_workers=6, split_ratio=0.9, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=model.transform)
     
     with open(f'{save_path}/train_indices.txt', 'w') as f:
@@ -48,61 +45,62 @@ models = {
             "model": mnv3tl.MobileNetV3TL,
             "train": mnv3tl.train,
             "predict": mnv3tl.predict,
-            "path": "mnv3tl-pipeline2",
+            "path": "mnv3tl-pipeline3",
             "batch": 64,
-            "epochs": 15,
+            "epochs": 3,
+            "epoch_tuning": False,
             "patience": 5,
             "n_mels": 224, # required dimension of 224x224
             "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         },
-        "env2b0tl": {
-            "package": env2b0tl,
-            "model": env2b0tl.EfficientNetV2B0TL,
-            "train": env2b0tl.train,
-            "predict": env2b0tl.predict,
-            "path": "env2b0tl-pipeline2",
-            "batch": 64,
-            "epochs": 18,
-            "patience": 5,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        "env2b1tl": {
-            "package": env2b1tl,
-            "model": env2b1tl.EfficientNetV2B1TL,
-            "train": env2b1tl.train,
-            "predict": env2b1tl.predict,
-            "path": "env2b1tl-pipeline2",
-            "batch": 64,
-            "epochs": 10,
-            "patience": 10,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        "inv3tl": {
-            "package": inv3tl,
-            "model": inv3tl.InceptionV3TL,
-            "train": inv3tl.train,
-            "predict": inv3tl.predict,
-            "path": "inv3tl-pipeline2",
-            "batch": 32,
-            "epochs": 15,
-            "patience": 5,
-            "n_mels": 299, # required dimension of 299x299
-            "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
-        },
-        "homebrew": {
-            "package": homebrew,
-            "model": homebrew.TuningAudioClassifier,
-            "train": homebrew.train,
-            "predict": homebrew.predict,
-            "path": "homebrew-pipeline2",
-            "batch": 64,
-            "epochs": 50,
-            "patience": 5,
-            "n_mels": 128,
-            "hop_len": 512
-        }
+        # "env2b0tl": {
+        #     "package": env2b0tl,
+        #     "model": env2b0tl.EfficientNetV2B0TL,
+        #     "train": env2b0tl.train,
+        #     "predict": env2b0tl.predict,
+        #     "path": "env2b0tl-pipeline3",
+        #     "batch": 64,
+        #     "epochs": 18,
+        #     "patience": 5,
+        #     "n_mels": 192, # required dimension of 192x192
+        #     "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
+        # },
+        # "env2b1tl": {
+        #     "package": env2b1tl,
+        #     "model": env2b1tl.EfficientNetV2B1TL,
+        #     "train": env2b1tl.train,
+        #     "predict": env2b1tl.predict,
+        #     "path": "env2b1tl-pipeline3",
+        #     "batch": 64,
+        #     "epochs": 10,
+        #     "patience": 10,
+        #     "n_mels": 192, # required dimension of 192x192
+        #     "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
+        # },
+        # "inv3tl": {
+        #     "package": inv3tl,
+        #     "model": inv3tl.InceptionV3TL,
+        #     "train": inv3tl.train,
+        #     "predict": inv3tl.predict,
+        #     "path": "inv3tl-pipeline3",
+        #     "batch": 32,
+        #     "epochs": 15,
+        #     "patience": 5,
+        #     "n_mels": 299, # required dimension of 299x299
+        #     "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
+        # },
+        # "homebrew": {
+        #     "package": homebrew,
+        #     "model": homebrew.TuningAudioClassifier,
+        #     "train": homebrew.train,
+        #     "predict": homebrew.predict,
+        #     "path": "homebrew-pipeline3",
+        #     "batch": 64,
+        #     "epochs": 50,
+        #     "patience": 5,
+        #     "n_mels": 128,
+        #     "hop_len": 512
+        # }
         # "dn121tl": {
         #     "package": dn121tl,
         #     "model": dn121tl.DenseNet121TL,

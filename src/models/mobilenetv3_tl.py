@@ -5,48 +5,26 @@ import torch
 import time
 import os
 from torchvision.transforms import Compose, Resize, Lambda, Normalize
+import util
 
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
     return x.expand(3, -1, -1)
 
 class MobileNetV3TL(nn.Module):
-    def __init__(self, input_path=None, save_path="./Data/models/model1", full=False, dropout=0.2):
+    def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-mnv3tl"), epoch_tuning=False):
         super(MobileNetV3TL, self).__init__()
-        self.full = full
-        self.dropout = dropout
         self.save_path = save_path
+        self.epoch_tuning = epoch_tuning
 
         if input_path is not None:
-            self.model = timm.create_model('mobilenetv3_large_100', pretrained=False)
-
-            if full:
-                self.model.classifier = nn.Sequential(
-                    nn.Linear(self.model.classifier.in_features, 12), # TODO: Change 40 to a better number
-                    nn.ReLU(),
-                    nn.Dropout(p=self.dropout),
-                    nn.Linear(12, CLASSES)
-                )
-            else:
-                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
-
+            self.model = timm.create_model('mobilenetv3_large_100', pretrained=False, num_classes=CLASSES)
             self.model.load_state_dict(torch.load(input_path))
         else:
-            self.model = timm.create_model('mobilenetv3_large_100', pretrained=True)
-            # for param in self.model.parameters():
-            #     param.requires_grad = False
-
-            if full:
-                self.model.classifier = nn.Sequential(
-                    nn.Linear(self.model.classifier.in_features, 12), # TODO: Change 40 to a better number
-                    nn.ReLU(),
-                    nn.Dropout(p=self.dropout),
-                    nn.Linear(12, CLASSES)
-                )
-            else:
-                self.model.classifier = nn.Linear(self.model.classifier.in_features, CLASSES)
+            self.model = timm.create_model('mobilenetv3_large_100', pretrained=True, num_classes=CLASSES)
         
         self.config = resolve_data_config({}, model=self.model)
+        
         self.transform = Compose([
             Resize((self.config['input_size'][1], self.config['input_size'][2])),
             Lambda(repeat_channels),  # Replicate the channel to simulate RGB
@@ -61,11 +39,11 @@ class MobileNetV3TL(nn.Module):
         weights_path = os.path.join(self.save_path, "Weights")
         os.makedirs(weights_path, exist_ok=True)
         # Construct path and save
-        full_path = os.path.join(weights_path, f"mnv3tl-{'full' if self.full else 'small'}-e{epoch}.pt")
+        full_path = os.path.join(weights_path, f"{self.name()}-e{epoch}.pt")
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
-        return f"mnv3tl{'-full' if self.full else ''}"
+        return f"mnv3tl{'-etuning' if self.epoch_tuning else ''}"
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
@@ -73,10 +51,16 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
-                                                    steps_per_epoch=len(train_dl),
-                                                    epochs=max_epochs, anneal_strategy='cos')
+    if model.epoch_tuning:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
+                                                        steps_per_epoch=len(train_dl),
+                                                        epochs=max_epochs, anneal_strategy='linear')
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
+                                                        steps_per_epoch=len(train_dl),
+                                                        epochs=max_epochs, anneal_strategy='cos')
     
     best_val_loss = float('inf')
     epochs_without_improvement = 0
