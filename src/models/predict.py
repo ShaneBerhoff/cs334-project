@@ -15,7 +15,7 @@ def main(batch, workers, model_info):
 
     # predict
     start = time.time()
-    model_info["package"].predict(model, test_dl)
+    model_info["package"].predict(model, test_dl, final=True)
     print(f"Predict time: {time.time() - start}")
 
 

@@ -128,23 +128,36 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
                 break
         
 
-def predict(model, val_dl):
-    correct_prediction = 0
-    total_prediction = 0
+def predict(model, val_dl, final=False):
+    correct_predictions = [0] * CLASSES
+    total_predictions = [0] * CLASSES
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-
     model.eval()
 
     with torch.no_grad():
         for data in val_dl:
             inputs, labels = data[0].to(device), data[1].to(device)
-
             outputs = model(inputs)
-            _, prediction = torch.max(outputs, 1)
-            correct_prediction += (prediction == labels).sum().item()
-            total_prediction += prediction.shape[0]
+            _, predictions = torch.max(outputs, 1)
 
-    acc = correct_prediction / total_prediction
-    print(f"Accuracy: {acc:.4f}, Total items: {total_prediction}")
+            for label, prediction in zip(labels, predictions):
+                if label == prediction:
+                    correct_predictions[label] += 1
+                total_predictions[label] += 1
+
+    if final:
+        accuracies = []
+        for i in range(CLASSES):
+            if total_predictions[i] > 0:
+                accuracy = correct_predictions[i] / total_predictions[i]
+                accuracies.append(accuracy)
+            else:
+                accuracies.append(0.0)
+
+        for i in range(CLASSES):
+            print(f"{util.class_map(i)} Accuracy: {accuracies[i]:.4f}, Total items: {total_predictions[i]}")
+
+    overall_acc = sum(correct_predictions) / sum(total_predictions)
+    print(f"\nOverall Accuracy: {overall_acc:.4f}, Total items: {sum(total_predictions)}")

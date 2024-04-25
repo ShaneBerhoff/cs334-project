@@ -36,10 +36,36 @@ def run_pipeline(model_info):
     # load best epoch
     model, _, test_dl = load_best_model(model_info, 6)
     start = time.time()
-    model_info["package"].predict(model, test_dl)
+    model_info["package"].predict(model, test_dl, final=True)
     print(f"Predict time: {time.time() - start}")
 
 models = {
+        "homebrew-etune": {
+            "package": homebrew,
+            "model": homebrew.Homebrew,
+            "train": homebrew.train,
+            "predict": homebrew.predict,
+            "path": "homebrew-pipeline3-etune",
+            "batch": 64,
+            "epochs": 50,
+            "epoch_tuning": True,
+            "patience": 5,
+            "n_mels": 128,
+            "hop_len": 512
+        },
+        "homebrew": {
+            "package": homebrew,
+            "model": homebrew.Homebrew,
+            "train": homebrew.train,
+            "predict": homebrew.predict,
+            "path": "homebrew-pipeline3",
+            "batch": 64,
+            "epochs": 50,
+            "epoch_tuning": False,
+            "patience": 5,
+            "n_mels": 128,
+            "hop_len": 512
+        },
         "mnv3tl-etune": {
             "package": mnv3tl,
             "model": mnv3tl.MobileNetV3TL,
@@ -117,32 +143,6 @@ models = {
             "patience": 5,
             "n_mels": 192, # required dimension of 192x192
             "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        "homebrew-etune": {
-            "package": homebrew,
-            "model": homebrew.Homebrew,
-            "train": homebrew.train,
-            "predict": homebrew.predict,
-            "path": "homebrew-pipeline3-etune",
-            "batch": 64,
-            "epochs": 50,
-            "epoch_tuning": True,
-            "patience": 5,
-            "n_mels": 128,
-            "hop_len": 512
-        },
-        "homebrew": {
-            "package": homebrew,
-            "model": homebrew.Homebrew,
-            "train": homebrew.train,
-            "predict": homebrew.predict,
-            "path": "homebrew-pipeline3",
-            "batch": 64,
-            "epochs": 50,
-            "epoch_tuning": False,
-            "patience": 5,
-            "n_mels": 128,
-            "hop_len": 512
         },
         "inv3tl-etune": {
             "package": inv3tl,
