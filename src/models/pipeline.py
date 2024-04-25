@@ -40,31 +40,32 @@ def run_pipeline(model_info):
     print(f"Predict time: {time.time() - start}")
 
 models = {
-        "mnv3tl": {
-            "package": mnv3tl,
-            "model": mnv3tl.MobileNetV3TL,
-            "train": mnv3tl.train,
-            "predict": mnv3tl.predict,
-            "path": "mnv3tl-pipeline3",
+        # "mnv3tl": {
+        #     "package": mnv3tl,
+        #     "model": mnv3tl.MobileNetV3TL,
+        #     "train": mnv3tl.train,
+        #     "predict": mnv3tl.predict,
+        #     "path": "mnv3tl-pipeline3",
+        #     "batch": 64,
+        #     "epochs": 15,
+        #     "epoch_tuning": False,
+        #     "patience": 5,
+        #     "n_mels": 224, # required dimension of 224x224
+        #     "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
+        # },
+        "env2b0tl": {
+            "package": env2b0tl,
+            "model": env2b0tl.EfficientNetV2B0TL,
+            "train": env2b0tl.train,
+            "predict": env2b0tl.predict,
+            "path": "env2b0tl-pipeline3",
             "batch": 64,
-            "epochs": 3,
+            "epochs": 2,
             "epoch_tuning": False,
             "patience": 5,
-            "n_mels": 224, # required dimension of 224x224
-            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
+            "n_mels": 192, # required dimension of 192x192
+            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
         },
-        # "env2b0tl": {
-        #     "package": env2b0tl,
-        #     "model": env2b0tl.EfficientNetV2B0TL,
-        #     "train": env2b0tl.train,
-        #     "predict": env2b0tl.predict,
-        #     "path": "env2b0tl-pipeline3",
-        #     "batch": 64,
-        #     "epochs": 18,
-        #     "patience": 5,
-        #     "n_mels": 192, # required dimension of 192x192
-        #     "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        # },
         # "env2b1tl": {
         #     "package": env2b1tl,
         #     "model": env2b1tl.EfficientNetV2B1TL,
