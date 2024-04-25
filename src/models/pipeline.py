@@ -66,18 +66,31 @@ models = {
         #     "n_mels": 192, # required dimension of 192x192
         #     "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
         # },
-        "env2b1tl": {
-            "package": env2b1tl,
-            "model": env2b1tl.EfficientNetV2B1TL,
-            "train": env2b1tl.train,
-            "predict": env2b1tl.predict,
-            "path": "env2b1tl-pipeline3",
+        # "env2b1tl": {
+        #     "package": env2b1tl,
+        #     "model": env2b1tl.EfficientNetV2B1TL,
+        #     "train": env2b1tl.train,
+        #     "predict": env2b1tl.predict,
+        #     "path": "env2b1tl-pipeline3",
+        #     "batch": 64,
+        #     "epochs": 11,
+        #     "epoch_tuning": False,
+        #     "patience": 5,
+        #     "n_mels": 192, # required dimension of 192x192
+        #     "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
+        # },
+        "homebrew": {
+            "package": homebrew,
+            "model": homebrew.Homebrew,
+            "train": homebrew.train,
+            "predict": homebrew.predict,
+            "path": "homebrew-pipeline3",
             "batch": 64,
             "epochs": 2,
             "epoch_tuning": False,
-            "patience": 10,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
+            "patience": 5,
+            "n_mels": 128,
+            "hop_len": 512
         },
         # "inv3tl": {
         #     "package": inv3tl,
@@ -91,18 +104,6 @@ models = {
         #     "n_mels": 299, # required dimension of 299x299
         #     "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
         # },
-        # "homebrew": {
-        #     "package": homebrew,
-        #     "model": homebrew.TuningAudioClassifier,
-        #     "train": homebrew.train,
-        #     "predict": homebrew.predict,
-        #     "path": "homebrew-pipeline3",
-        #     "batch": 64,
-        #     "epochs": 50,
-        #     "patience": 5,
-        #     "n_mels": 128,
-        #     "hop_len": 512
-        # }
         # "dn121tl": {
         #     "package": dn121tl,
         #     "model": dn121tl.DenseNet121TL,

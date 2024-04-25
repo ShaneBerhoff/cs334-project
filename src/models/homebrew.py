@@ -1,23 +1,17 @@
-import argparse
 import os
 import torch.nn as nn
 import torch
 from torch.nn import init
 import time
-from data_loader import get_loaders
-from models.load_model import load_best_model
 import util
 
-# ----------------------------
-# Audio Classification Model
-# ----------------------------
-class TuningAudioClassifier (nn.Module):
-    # ----------------------------
-    # Build the model architecture
-    # ----------------------------
-    def __init__(self, input_path=None, save_path="./Data/models/homebrew"):
+class Homebrew(nn.Module):
+    def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-homebrew"), epoch_tuning=False):
         super().__init__()
         self.save_path = save_path
+        self.epoch_tuning = epoch_tuning
+        self.transform = None
+
         conv_layers = []
 
         # First Convolution Block with Relu and Batch Norm. Use Kaiming Initialization
@@ -61,10 +55,7 @@ class TuningAudioClassifier (nn.Module):
         
         if input_path is not None:
             self.load_state_dict(torch.load(input_path))
- 
-    # ----------------------------
-    # Forward pass computations
-    # ----------------------------
+
     def forward(self, x):
         # Run the convolutional blocks
         x = self.conv(x)
@@ -88,17 +79,23 @@ class TuningAudioClassifier (nn.Module):
         torch.save(self.state_dict(), full_path)
 
     def name(self):
-        return f"homebrew"
+        return f"homebrew{'-etuning' if self.epoch_tuning else ''}"
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
-                                                    steps_per_epoch=len(train_dl),
-                                                    epochs=max_epochs, anneal_strategy='cos')
+    if model.epoch_tuning:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
+                                                        steps_per_epoch=len(train_dl),
+                                                        epochs=max_epochs, anneal_strategy='linear')
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
+                                                        steps_per_epoch=len(train_dl),
+                                                        epochs=max_epochs, anneal_strategy='cos')
     
     best_val_loss = float('inf')
     epochs_without_improvement = 0
@@ -186,40 +183,3 @@ def predict(model, val_dl):
 
     acc = correct_prediction / total_prediction
     print(f"Accuracy: {acc:.4f}, Total items: {total_prediction}")
-    
-def main(batch, workers, save_path, epoch):
-    os.makedirs(save_path, exist_ok=True)
-    model = TuningAudioClassifier(save_path=save_path)
-    train_dl, test_dl, train_index, test_index = get_loaders(batch_size=batch, num_workers=workers, split_ratio=0.9, n_mels=128, n_fft=2048, hop_len=512)
-
-    with open(f'{save_path}/train_indices.txt', 'w') as f:
-        for index in train_index:
-            f.write(f"{index}\n")
-
-    with open(f'{save_path}/test_indices.txt', 'w') as f:
-        for index in test_index:
-            f.write(f"{index}\n")
-    
-    print(f"Running train and predict on {model.name()} with batch size {batch} and {workers} workers")
-
-    # train
-    start = time.time()
-    train(model, train_dl, test_dl, max_epochs=epoch, patience=5)
-    print(f"Train time: {time.time() - start}")
-
-    # predict
-    # CURRENTLY DOESN'T LOAD BEST EPOCH
-    # model, _, test_dl = load_best_model(model_info, workers)
-    # start = time.time()
-    predict(model, test_dl)
-    print(f"Predict time: {time.time() - start}")
-    
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch', default=32, help='Batch size')
-    parser.add_argument('--workers', default=6, help='Workers to use for data loading')
-    parser.add_argument('--max_epochs', default=20, help='Max epochs for training')
-    parser.add_argument('--save', default="homebrew", help='Name of directory to save model weights')
-    args = parser.parse_args()
-
-    main(batch=int(args.batch), workers=int(args.workers), save_path=os.path.join(util.from_base_path("/Data/models"), args.save), epoch=int(args.max_epochs))
