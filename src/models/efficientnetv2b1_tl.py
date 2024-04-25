@@ -4,8 +4,8 @@ import torch.nn as nn
 import torch
 import time
 import os
-from timm.data.transforms_factory import create_transform
 from torchvision.transforms import Compose, Resize, Lambda, Normalize
+import util
 
 CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
@@ -13,9 +13,10 @@ def repeat_channels(x):
 
 # optimal load seems to be batch size 64, workers 6 - minimal fluctuation in CUDA usage and perfect fit in memory
 class EfficientNetV2B1TL(nn.Module):
-    def __init__(self, input_path=None, save_path="./Data/models/model1"):
+    def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-env2b1tl"), epoch_tuning=False):
         super(EfficientNetV2B1TL, self).__init__()
         self.save_path = save_path
+        self.epoch_tuning = epoch_tuning
 
         if input_path is not None:
             self.model = timm.create_model('tf_efficientnetv2_b1.in1k', pretrained=False, num_classes=CLASSES)
@@ -24,7 +25,6 @@ class EfficientNetV2B1TL(nn.Module):
             self.model = timm.create_model('tf_efficientnetv2_b1.in1k', pretrained=True, num_classes=CLASSES)
         
         self.config = resolve_data_config({}, model=self.model)
-
         self.transform = Compose([
             Resize(self.config['input_size'][1:]),
             Lambda(repeat_channels),  # Replicate the channel to simulate RGB
@@ -43,7 +43,7 @@ class EfficientNetV2B1TL(nn.Module):
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
-        return f"env2b1tl"
+        return f"env2b1tl{'-etuning' if self.epoch_tuning else ''}"
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
@@ -51,10 +51,16 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
-                                                    steps_per_epoch=len(train_dl),
-                                                    epochs=max_epochs, anneal_strategy='cos')
+    if model.epoch_tuning:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
+                                                        steps_per_epoch=len(train_dl),
+                                                        epochs=max_epochs, anneal_strategy='linear')
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
+                                                        steps_per_epoch=len(train_dl),
+                                                        epochs=max_epochs, anneal_strategy='cos')
     
     best_val_loss = float('inf')
     epochs_without_improvement = 0

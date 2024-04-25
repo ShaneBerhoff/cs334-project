@@ -53,31 +53,32 @@ models = {
         #     "n_mels": 224, # required dimension of 224x224
         #     "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
         # },
-        "env2b0tl": {
-            "package": env2b0tl,
-            "model": env2b0tl.EfficientNetV2B0TL,
-            "train": env2b0tl.train,
-            "predict": env2b0tl.predict,
-            "path": "env2b0tl-pipeline3",
-            "batch": 64,
-            "epochs": 2,
-            "epoch_tuning": False,
-            "patience": 5,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        # "env2b1tl": {
-        #     "package": env2b1tl,
-        #     "model": env2b1tl.EfficientNetV2B1TL,
-        #     "train": env2b1tl.train,
-        #     "predict": env2b1tl.predict,
-        #     "path": "env2b1tl-pipeline3",
+        # "env2b0tl": {
+        #     "package": env2b0tl,
+        #     "model": env2b0tl.EfficientNetV2B0TL,
+        #     "train": env2b0tl.train,
+        #     "predict": env2b0tl.predict,
+        #     "path": "env2b0tl-pipeline3",
         #     "batch": 64,
-        #     "epochs": 10,
-        #     "patience": 10,
+        #     "epochs": 18,
+        #     "epoch_tuning": False,
+        #     "patience": 5,
         #     "n_mels": 192, # required dimension of 192x192
         #     "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
         # },
+        "env2b1tl": {
+            "package": env2b1tl,
+            "model": env2b1tl.EfficientNetV2B1TL,
+            "train": env2b1tl.train,
+            "predict": env2b1tl.predict,
+            "path": "env2b1tl-pipeline3",
+            "batch": 64,
+            "epochs": 2,
+            "epoch_tuning": False,
+            "patience": 10,
+            "n_mels": 192, # required dimension of 192x192
+            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
+        },
         # "inv3tl": {
         #     "package": inv3tl,
         #     "model": inv3tl.InceptionV3TL,
