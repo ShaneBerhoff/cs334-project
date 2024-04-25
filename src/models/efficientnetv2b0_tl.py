@@ -25,7 +25,6 @@ class EfficientNetV2B0TL(nn.Module):
             self.model = timm.create_model('tf_efficientnetv2_b0.in1k', pretrained=True, num_classes=CLASSES)
         
         self.config = resolve_data_config({}, model=self.model)
-
         self.transform = Compose([
             Resize(self.config['input_size'][1:]),
             Lambda(repeat_channels),  # Replicate the channel to simulate RGB

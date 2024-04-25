@@ -24,7 +24,6 @@ class MobileNetV3TL(nn.Module):
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True, num_classes=CLASSES)
         
         self.config = resolve_data_config({}, model=self.model)
-        
         self.transform = Compose([
             Resize((self.config['input_size'][1], self.config['input_size'][2])),
             Lambda(repeat_channels),  # Replicate the channel to simulate RGB
