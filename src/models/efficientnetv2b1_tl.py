@@ -20,7 +20,7 @@ class EfficientNetV2B1TL(nn.Module):
 
         if input_path is not None:
             self.model = timm.create_model('tf_efficientnetv2_b1.in1k', pretrained=False, num_classes=CLASSES)
-            self.model.load_state_dict(torch.load(input_path))
+            self.model.load_state_dict(torch.load(input_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
         else:
             self.model = timm.create_model('tf_efficientnetv2_b1.in1k', pretrained=True, num_classes=CLASSES)
         
