@@ -1,4 +1,4 @@
-from models.pipeline import models
+from models.model_params import models
 from data_loader import get_loaders
 import matplotlib.pyplot as plt
 

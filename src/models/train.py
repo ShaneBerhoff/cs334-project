@@ -1,4 +1,4 @@
-from models.pipeline import models
+from models.model_params import models
 from models.load_model import load_best_model
 from data_loader import get_loaders
 import os
@@ -11,7 +11,6 @@ def main(batch, workers, model_info):
     os.makedirs(save_path, exist_ok=True)
     model = model_info["model"](save_path=save_path)
 
-    # train_dl, test_dl, train_index, test_index = get_loaders(batch_size=batch, num_workers=workers, n_mels=224, n_fft=2048, hop_len=int((24414*(2618/1000))//(224-1)-5), transform=model.transform)
     train_dl, test_dl, train_index, test_index = get_loaders(batch_size=(model_info["batch"] if batch <= 0 else batch), num_workers=workers, split_ratio=0.9, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=model.transform)
     
     with open(f'{save_path}/train_indices.txt', 'w') as f:

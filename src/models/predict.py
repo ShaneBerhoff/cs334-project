@@ -1,4 +1,4 @@
-from models.pipeline import models
+from models.model_params import models
 from models.load_model import load_best_model
 import os
 import argparse
