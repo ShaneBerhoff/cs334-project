@@ -22,7 +22,7 @@ class DenseNet121TL(nn.Module):
             for name, param in self.model.named_parameters():
                 if name[:20] not in ["features.denseblock2", "features.denseblock3", "features.denseblock4", "features.transition3", "features.transition2", "features.transition1"]:
                     param.requires_grad = False
-            self.model.load_state_dict(torch.load(input_path))
+            self.model.load_state_dict(torch.load(input_path, map_location="cuda" if torch.cuda.is_available() else "cpu"))
         else:
             self.model = timm.create_model('densenet121', pretrained=True, num_classes=CLASSES)
             for name, param in self.model.named_parameters():

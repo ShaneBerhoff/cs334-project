@@ -56,7 +56,7 @@ class Homebrew(nn.Module):
         self.conv = nn.Sequential(*conv_layers)
         
         if input_path is not None:
-            self.load_state_dict(torch.load(input_path))
+            self.load_state_dict(torch.load(input_path, map_location="cuda" if torch.cuda.is_available() else "cpu"))
 
     def forward(self, x):
         # Run the convolutional blocks

@@ -19,7 +19,7 @@ class MobileNetV3TL(nn.Module):
 
         if input_path is not None:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=False, num_classes=CLASSES)
-            self.model.load_state_dict(torch.load(input_path))
+            self.model.load_state_dict(torch.load(input_path, map_location="cuda" if torch.cuda.is_available() else "cpu"))
         else:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True, num_classes=CLASSES)
         

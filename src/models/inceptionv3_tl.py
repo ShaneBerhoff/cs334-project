@@ -25,7 +25,7 @@ class InceptionV3TL(nn.Module):
                 if name.split(".")[0] not in ["Mixed_6a", "Mixed_6b", "Mixed_6c" "Mixed_6d", "Mixed_6e", "Mixed_7a", "Mixed_7b", "Mixed_7c"]:
                     param.requires_grad = False
 
-            self.model.load_state_dict(torch.load(input_path))
+            self.model.load_state_dict(torch.load(input_path, map_location="cuda" if torch.cuda.is_available() else "cpu"))
         else:
             self.model = timm.create_model('inception_v3', pretrained=True, num_classes=CLASSES)
 
