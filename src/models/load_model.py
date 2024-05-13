@@ -6,14 +6,14 @@ import time
 import os
 import re
 
-def load_best_model(model_info, workers, load_epoch, options={}):
+def load_best_model(model_info, workers, load_epoch=-1, options={}):
     """
     Load the best model from the weights directory alongside the correct test/train indices.
 
     Args:
-        model_info: The parameter dict for the specific model to load
-        workers: subprocess for data loading
-        load_epoch: can specify a specific epoch to load
+        model_info (dict): The parameter dict for the specific model to load
+        workers (int): subprocess for data loading
+        load_epoch (int): can specify a specific epoch to load
         options: additional options to pass into the model
     """
     base_path = os.path.join(util.from_base_path("/Data/models"))
@@ -83,11 +83,11 @@ def main(workers, model_info, load_epoch, Train, max_epochs, class_acc):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--workers', default=6, type=int, help='Workers to use for data loading')
-    parser.add_argument('--model', default="homebrew", help='Dict key of model from models')
+    parser.add_argument('--model', default="homebrew", help=f"Options: {[model for model in models]}")
     parser.add_argument('--load_epoch', default=-1, type=int, help='Which stored epoch weights to use')
-    parser.add_argument('--train', default=False, type=bool, help='Continue training weights?')
-    parser.add_argument('--max_epochs', default=20, type=int, help='Max epochs for training')
-    parser.add_argument('--class_acc', default=False, type=bool, help='Flag for showing individual class acc during predict')
+    parser.add_argument('--train', action='store_true', help='Flag to continue training weights')
+    parser.add_argument('--max_epochs', default=20, type=int, help='Max epochs for training if selected')
+    parser.add_argument('--class_acc', action='store_true', help='Flag for showing individual class accuracy during predict')
     args = parser.parse_args()
     
-    main(workers=int(args.workers), model_info=models[args.model], load_epoch=args.load_epoch, Train=bool(args.train), max_epochs=int(args.max_epochs), class_acc=bool(args.class_acc))
+    main(workers=int(args.workers), model_info=models[args.model], load_epoch=args.load_epoch, Train=args.train, max_epochs=int(args.max_epochs), class_acc=args.class_acc)
