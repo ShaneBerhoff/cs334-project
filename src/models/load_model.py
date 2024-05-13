@@ -11,8 +11,10 @@ def load_best_model(model_info, workers, load_epoch, options={}):
     Load the best model from the weights directory alongside the correct test/train indices.
 
     Args:
-        model: The specific model in pipeline to load.
-        model_path: The path to the model directory, starting from cs334-project/Data/models.
+        model_info: The parameter dict for the specific model to load
+        workers: subprocess for data loading
+        load_epoch: can specify a specific epoch to load
+        options: additional options to pass into the model
     """
     base_path = os.path.join(util.from_base_path("/Data/models"))
     model_path = os.path.join(base_path, model_info["path"])
@@ -54,7 +56,16 @@ def load_best_model(model_info, workers, load_epoch, options={}):
 
 
 def main(workers, model_info, load_epoch, Train, max_epochs, class_acc):
+    """Load existing model weights for continued training and/or prediction
 
+    Args:
+        workers (int): number of subprocesses for data loading
+        model_info (dict): all the parameters of the model
+        load_epoch (int): choice of a specific epoch weights to load
+        Train (bool): flag for continuing to train weights
+        max_epochs (int): how many epochs to train for
+        class_acc (bool): flag for readouts of individual class accuracy at predict
+    """
     model, train_dl, test_dl = load_best_model(model_info, workers, load_epoch)
     
     if Train: # train
@@ -71,12 +82,12 @@ def main(workers, model_info, load_epoch, Train, max_epochs, class_acc):
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--workers', default=6, help='Workers to use for data loading')
+    parser.add_argument('--workers', default=6, type=int, help='Workers to use for data loading')
     parser.add_argument('--model', default="homebrew", help='Dict key of model from models')
-    parser.add_argument('--load_epoch', default=-1, help='Which stored epoch weights to use')
-    parser.add_argument('--train', default=False, help='Continue training weights?')
-    parser.add_argument('--max_epochs', default=20, help='Max epochs for training')
-    parser.add_argument('--class_acc', default=False, help='Flag for showing individual class acc during predict')
+    parser.add_argument('--load_epoch', default=-1, type=int, help='Which stored epoch weights to use')
+    parser.add_argument('--train', default=False, type=bool, help='Continue training weights?')
+    parser.add_argument('--max_epochs', default=20, type=int, help='Max epochs for training')
+    parser.add_argument('--class_acc', default=False, type=bool, help='Flag for showing individual class acc during predict')
     args = parser.parse_args()
     
     main(workers=int(args.workers), model_info=models[args.model], load_epoch=args.load_epoch, Train=bool(args.train), max_epochs=int(args.max_epochs), class_acc=bool(args.class_acc))

@@ -7,6 +7,15 @@ import time
 import util
 
 def main(batch, workers, model_info):
+    """Runs train and predict on a specific model storing the train/test split and weights.
+    Splits are stored in /Data/models/{model_info['path']}/
+    Weights are stored in /Data/models/{model_info['path']}/Weights
+
+    Args:
+        batch (int): batch size for training
+        workers (int): number of subprocesses for data loading
+        model_info (dict): parameter dict for the specific model to load
+    """
     save_path = os.path.join(util.from_base_path("/Data/models"), model_info["path"])
     os.makedirs(save_path, exist_ok=True)
     model = model_info["model"](save_path=save_path)
@@ -38,8 +47,8 @@ def main(batch, workers, model_info):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch', default=-1, help='Batch size')
-    parser.add_argument('--workers', default=6, help='Workers to use for data loading')
+    parser.add_argument('--batch', default=-1, type=int, help='Batch size')
+    parser.add_argument('--workers', default=6, type=int, help='Workers to use for data loading')
     parser.add_argument('--model', default="mnv3tl", help=f"Options: {[model for model in models]}")
 
     args = parser.parse_args()
