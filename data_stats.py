@@ -68,18 +68,26 @@ def Tess(path: str):
 
     return df
 
-dfCrema = Crema('Data/archive/Crema/')
-dfRavdess = Ravdess('Data/archive/Ravdess/audio_speech_actors_01-24/')
-dfSavee = Savee('Data/archive/Savee/')
-dfTess = Tess('Data/archive/Tess/')
+def main():
+    """Determines key statistical informaion about the data for later use in the project.
+    Currently determines distrabution of sample rates, average length of clip, and distrabution of channels.
+    """
+    
+    dfCrema = Crema('Data/archive/Crema/')
+    dfRavdess = Ravdess('Data/archive/Ravdess/audio_speech_actors_01-24/')
+    dfSavee = Savee('Data/archive/Savee/')
+    dfTess = Tess('Data/archive/Tess/')
 
-df = pd.concat([dfCrema, dfRavdess, dfSavee, dfTess], ignore_index=True, sort=False)
+    df = pd.concat([dfCrema, dfRavdess, dfSavee, dfTess], ignore_index=True, sort=False)
 
-print("\nSample Rate Counts")
-print(df['sampleRate'].value_counts())
+    print("\nSample Rate Counts")
+    print(df['sampleRate'].value_counts())
 
-print("\nAverage Length of Clip (s)")
-print(df['length'].mean())
+    print("\nAverage Length of Clip (s)")
+    print(df['length'].mean())
 
-print("\nNum Channels Counts")
-print(df['channels'].value_counts())
+    print("\nNum Channels Counts")
+    print(df['channels'].value_counts())
+
+if __name__ == '__main__':
+    main()

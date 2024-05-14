@@ -7,6 +7,7 @@ def main():
     Generates spectrograms for all defined models.
     Used to check dimension of data fed into each model.
     Used to verify correct spectrogram generation.
+    Outputs image representations in Data/Spectrogram/{model.name()}.png
     """
     for m in models:
         model_info = models[m]

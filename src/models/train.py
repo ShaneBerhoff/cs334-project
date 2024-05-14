@@ -14,8 +14,9 @@ def main(batch, workers, split_ratio, model_info, class_acc):
     Args:
         batch (int): batch size for training
         workers (int): number of subprocesses for data loading
-        split_ratio (int): train test split of data
+        split_ratio (float): train test split of data
         model_info (dict): parameter dict for the specific model to load
+        class_acc (bool): flag for computing individual class accuracy at runtime
     """
     save_path = os.path.join(util.from_base_path("/Data/models"), model_info["path"])
     os.makedirs(save_path, exist_ok=True)

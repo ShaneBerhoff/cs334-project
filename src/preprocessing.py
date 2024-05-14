@@ -123,8 +123,17 @@ class AudioUtil():
 
         return aug_spec
 
-def preProcessAudio(data_path, metadata_path, save_path, sr=24414, channel=1, duration=2618, shift_pct=.03, n_mels=64, n_fft=1024, hop_len=256):
-    """Process and save all audio files to tensors."""
+def preProcessAudio(data_path, metadata_path, save_path, sr=24414, channel=1, duration=2618):
+    """Preprocess and save all audio files to tensors
+
+    Args:
+        data_path (path): base data path
+        metadata_path (path): path to data for generating metadata
+        save_path (path): location to save tensors
+        sr (int, optional): sample rate to standardize all audio to. Defaults to 24414.
+        channel (int, optional): number of channels to change all audio to. Defaults to 1.
+        duration (int, optional): length to pad/trim all audio. Defaults to 2618.
+    """
     df = metadata.Metadata(metadata_path).getMetadata()
     os.makedirs(save_path, exist_ok=True)
 
@@ -137,9 +146,6 @@ def preProcessAudio(data_path, metadata_path, save_path, sr=24414, channel=1, du
         reaud = AudioUtil.resample(aud, sr)
         rechan = AudioUtil.rechannel(reaud, channel)
         dur_aud = AudioUtil.pad_trunc(rechan, duration)
-        #shift_aud = AudioUtil.time_shift(dur_aud, shift_pct)
-        #sgram = AudioUtil.spectro_gram(shift_aud, n_mels, n_fft, hop_len)
-        #aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
 
         # Save the preprocessed spectrogram and the label
         torch.save((dur_aud, class_id), os.path.join(save_path, f'data_{idx}.pt'))

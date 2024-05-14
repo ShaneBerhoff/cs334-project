@@ -7,6 +7,17 @@ import time
 import util
 
 def run_pipeline(model_info, batch, workers, split_ratio, class_acc):
+    """Runs train and predict on a specific model storing the train/test split and weights.
+    Splits are stored in /Data/models/{model_info['path']}/
+    Weights are stored in /Data/models/{model_info['path']}/Weights
+    
+    Args:
+        model_info (dict): parameter dict for specific model to load
+        batch (int): batchsize for training
+        workers (int): number of subprocesses for data loading
+        split_ratio (float): percent of data used for train
+        class_acc (bool): flag for computing individual class accuracy at runtime
+    """
     save_path = os.path.join(util.from_base_path("/Data/models"), model_info["path"])
     os.makedirs(save_path, exist_ok=True)
     
@@ -37,6 +48,11 @@ def run_pipeline(model_info, batch, workers, split_ratio, class_acc):
 
 
 def main(batch, workers, split_ratio, class_acc):
+    """Runs the pipeline for all model parameters specified in models for each model.
+
+    Args:
+        Specified in run_pipeline
+    """
     for model in models:
         run_pipeline(models[model], batch, workers, split_ratio, class_acc)
 
