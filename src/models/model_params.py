@@ -1,8 +1,8 @@
-import models.mobilenetv3_tl as mnv3tl
-import models.efficientnetv2b0_tl as env2b0tl
-import models.efficientnetv2b1_tl as env2b1tl
-import models.inceptionv3_tl as inv3tl
-import models.homebrew as homebrew
+import models.arch.mobilenetv3_tl as mnv3tl
+import models.arch.efficientnetv2b0_tl as env2b0tl
+import models.arch.efficientnetv2b1_tl as env2b1tl
+import models.arch.inceptionv3_tl as inv3tl
+import models.arch.homebrew as homebrew
 
 models = {
         "homebrew-etune": {
@@ -134,17 +134,5 @@ models = {
             "patience": 5,
             "n_mels": 299, # required dimension of 299x299
             "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
-        },
-        # "dn121tl": {
-        #     "package": dn121tl,
-        #     "model": dn121tl.DenseNet121TL,
-        #     "train": dn121tl.train,
-        #     "predict": dn121tl.predict,
-        #     "path": "dn121tl",
-        #     "batch": 64,
-        #     "epochs": 30,
-        #     "patience": 8,
-        #     "n_mels": 224, #required dimension of 224x224
-        #     "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
-        # }
+        }
     }
