@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import torchaudio
+import util
 
 def Crema(directoryPath):
     dataPath = Path(directoryPath)
@@ -73,10 +74,10 @@ def main():
     Currently determines distrabution of sample rates, average length of clip, and distrabution of channels.
     """
     
-    dfCrema = Crema('Data/archive/Crema/')
-    dfRavdess = Ravdess('Data/archive/Ravdess/audio_speech_actors_01-24/')
-    dfSavee = Savee('Data/archive/Savee/')
-    dfTess = Tess('Data/archive/Tess/')
+    dfCrema = Crema(util.from_base_path('/Data/archive/Crema/'))
+    dfRavdess = Ravdess(util.from_base_path('/Data/archive/Ravdess/audio_speech_actors_01-24/'))
+    dfSavee = Savee(util.from_base_path('/Data/archive/Savee/'))
+    dfTess = Tess(util.from_base_path('/Data/archive/Tess/'))
 
     df = pd.concat([dfCrema, dfRavdess, dfSavee, dfTess], ignore_index=True, sort=False)
 

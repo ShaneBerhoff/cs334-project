@@ -1,14 +1,15 @@
-from src.preprocessing import AudioUtil
+from preprocessing import AudioUtil
 import matplotlib.pyplot as plt
+import util
 
-data_path = "Data/archive/Crema"
+data_path = util.from_base_path("/Data/archive/Crema")
 duration_ms = 2618
 sr = 24414
 channel = 1
 shift_pct = 0.3
 hop = int((sr*(duration_ms/1000))//(224-1)-5) # magic formula
 
-audio_file = "Data/archive/Crema/1001_DFA_HAP_XX.wav"
+audio_file = util.from_base_path("/Data/archive/Crema/1001_DFA_HAP_XX.wav")
 
 aud = AudioUtil.load_audio(audio_file)
 reaud = AudioUtil.resample(aud, sr)
@@ -23,5 +24,5 @@ axs.set_title('Mel Spectrogram (dB)')
 axs.set_ylabel('Mel Frequency Bin')
 axs.set_xlabel('Time Window')
 plt.colorbar(axs.imshow(sgram[0].numpy(), origin='lower', aspect='auto', cmap='viridis'), ax=axs)
-plt.savefig('Data/spectrogram/mel_spectrogram.png')
+plt.savefig(util.from_base_path('/Data/spectrogram/mel_spectrogram.png'))
 plt.close()
