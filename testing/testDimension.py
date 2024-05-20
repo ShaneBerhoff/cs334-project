@@ -1,4 +1,4 @@
-from src.data_loader import get_loaders
+from data_loader import get_loaders
 import pandas as pd
 
 # Calc params for wanted dimensions

@@ -1,12 +1,18 @@
-from models.pipeline import models
+from models.model_params import models
 from data_loader import get_loaders
 import matplotlib.pyplot as plt
 
-def main(T):
+def main():
+    """
+    Generates spectrograms for all defined models.
+    Used to check dimension of data fed into each model.
+    Used to verify correct spectrogram generation.
+    Outputs image representations in Data/Spectrogram/{model.name()}.png
+    """
     for m in models:
         model_info = models[m]
         model = model_info["model"]()
-        train_dl, _, _, _ = get_loaders(batch_size=1, num_workers=6, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=(model.transform if T else None))
+        train_dl, _, _, _ = get_loaders(batch_size=1, num_workers=6, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=model.transform)
         
         for sgram, _ in train_dl:
             print(f"Item in {model.name()} of shape: {sgram.shape}")
@@ -32,4 +38,4 @@ def main(T):
             break
         
 if __name__ == '__main__':
-    main(False)
+    main()

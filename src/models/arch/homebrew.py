@@ -1,37 +1,77 @@
-import timm
-from timm.data import resolve_data_config
+import os
 import torch.nn as nn
 import torch
+from torch.nn import init
 import time
-import os
-from torchvision.transforms import Compose, Resize, Lambda, Normalize
 import util
 
-CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
-def repeat_channels(x):
-    return x.expand(3, -1, -1)
+CLASSES = 6
 
-class MobileNetV3TL(nn.Module):
-    def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-mnv3tl"), epoch_tuning=False):
-        super(MobileNetV3TL, self).__init__()
+class Homebrew(nn.Module):
+    def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-homebrew"), epoch_tuning=False):
+        super().__init__()
         self.save_path = save_path
         self.epoch_tuning = epoch_tuning
+        self.transform = None
 
-        if input_path is not None:
-            self.model = timm.create_model('mobilenetv3_large_100', pretrained=False, num_classes=CLASSES)
-            self.model.load_state_dict(torch.load(input_path, map_location="cuda" if torch.cuda.is_available() else "cpu"))
-        else:
-            self.model = timm.create_model('mobilenetv3_large_100', pretrained=True, num_classes=CLASSES)
+        conv_layers = []
+
+        # First Convolution Block with Relu and Batch Norm. Use Kaiming Initialization
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.relu1 = nn.ReLU()
+        self.bn1 = nn.BatchNorm2d(8)
+        init.kaiming_normal_(self.conv1.weight, a=0.1)
+        self.conv1.bias.data.zero_()
+        conv_layers += [self.conv1, self.relu1, self.bn1]
+
+        # Second Convolution Block
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu2 = nn.ReLU()
+        self.bn2 = nn.BatchNorm2d(16)
+        init.kaiming_normal_(self.conv2.weight, a=0.1)
+        self.conv2.bias.data.zero_()
+        conv_layers += [self.conv2, self.relu2, self.bn2]
+
+        # Third Convolution Block
+        self.conv3 = nn.Conv2d(16, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu3 = nn.ReLU()
+        self.bn3 = nn.BatchNorm2d(32)
+        init.kaiming_normal_(self.conv3.weight, a=0.1)
+        self.conv3.bias.data.zero_()
+        conv_layers += [self.conv3, self.relu3, self.bn3]
+
+        # Fourth Convolution Block
+        self.conv4 = nn.Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu4 = nn.ReLU()
+        self.bn4 = nn.BatchNorm2d(64)
+        init.kaiming_normal_(self.conv4.weight, a=0.1)
+        self.conv4.bias.data.zero_()
+        conv_layers += [self.conv4, self.relu4, self.bn4]
+
+        # Linear Classifier
+        self.ap = nn.AdaptiveAvgPool2d(output_size=1)
+        self.lin = nn.Linear(in_features=64, out_features=CLASSES)
+
+        # Wrap the Convolutional Blocks
+        self.conv = nn.Sequential(*conv_layers)
         
-        self.config = resolve_data_config({}, model=self.model)
-        self.transform = Compose([
-            Resize((self.config['input_size'][1], self.config['input_size'][2])),
-            Lambda(repeat_channels),  # Replicate the channel to simulate RGB
-            Normalize(mean=self.config['mean'], std=self.config['std'])
-        ])
+        if input_path is not None:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.load_state_dict(torch.load(input_path, map_location=device))
 
     def forward(self, x):
-        return self.model(x)
+        # Run the convolutional blocks
+        x = self.conv(x)
+
+        # Adaptive pool and flatten for input to linear layer
+        x = self.ap(x)
+        x = x.view(x.shape[0], -1)
+
+        # Linear layer
+        x = self.lin(x)
+
+        # Final output
+        return x
     
     def save(self, epoch=0):
         # Create directory if it doesn't exist
@@ -39,11 +79,10 @@ class MobileNetV3TL(nn.Module):
         os.makedirs(weights_path, exist_ok=True)
         # Construct path and save
         full_path = os.path.join(weights_path, f"{self.name()}-e{epoch}.pt")
-        torch.save(self.model.state_dict(), full_path)
+        torch.save(self.state_dict(), full_path)
 
     def name(self):
-        return f"mnv3tl{'-etuning' if self.epoch_tuning else ''}"
-
+        return f"homebrew{'-etuning' if self.epoch_tuning else ''}"
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -126,7 +165,6 @@ def train(model, train_dl, val_dl, max_epochs, patience=5):
             if epochs_without_improvement >= patience:
                 print(f"Early stopping at epoch {epoch+1}")
                 break
-        
 
 def predict(model, val_dl, final=False):
     correct_predictions = [0] * CLASSES

@@ -1,21 +1,28 @@
-import models.mobilenetv3_tl as mnv3tl
-import models.efficientnetv2b0_tl as env2b0tl
-import models.efficientnetv2b1_tl as env2b1tl
-import models.inceptionv3_tl as inv3tl
-import models.densenet121_tl as dn121tl
-import models.homebrew as homebrew
+import argparse
+from models.model_params import models
 from models.load_model import load_best_model
 from data_loader import get_loaders
 import os
 import time
 import util
 
-def run_pipeline(model_info):
+def run_pipeline(model_info, batch, workers, split_ratio, class_acc):
+    """Runs train and predict on a specific model storing the train/test split and weights.
+    Splits are stored in /Data/models/{model_info['path']}/
+    Weights are stored in /Data/models/{model_info['path']}/Weights
+    
+    Args:
+        model_info (dict): parameter dict for specific model to load
+        batch (int): batchsize for training
+        workers (int): number of subprocesses for data loading
+        split_ratio (float): percent of data used for train
+        class_acc (bool): flag for computing individual class accuracy at runtime
+    """
     save_path = os.path.join(util.from_base_path("/Data/models"), model_info["path"])
     os.makedirs(save_path, exist_ok=True)
     
     model = model_info["model"](save_path=save_path, epoch_tuning=model_info["epoch_tuning"])
-    train_dl, test_dl, train_index, test_index = get_loaders(batch_size=model_info["batch"], num_workers=6, split_ratio=0.9, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=model.transform)
+    train_dl, test_dl, train_index, test_index = get_loaders(batch_size=(model_info["batch"] if batch <= 0 else batch), num_workers=workers, split_ratio=split_ratio, n_mels=model_info["n_mels"], n_fft=2048, hop_len=model_info["hop_len"], transform=model.transform)
     
     with open(f'{save_path}/train_indices.txt', 'w') as f:
         for index in train_index:
@@ -25,170 +32,37 @@ def run_pipeline(model_info):
         for index in test_index:
             f.write(f"{index}\n")
     
-    print(f"Running train and predict on {model.name()} with batch size {model_info['batch']} and 6 workers")
+    print(f"Running train and predict on {model.name()} with batch size {(model_info['batch'] if batch <= 0 else batch)}, {workers} workers, and a train/test split of {split_ratio:.2f}/{1-split_ratio:.2f}")
 
     # train
     start = time.time()
-    model_info["package"].train(model, train_dl, test_dl, model_info["epochs"], patience=model_info["patience"])
+    model_info["train"](model, train_dl, test_dl, model_info["epochs"], patience=model_info["patience"])
     print(f"Train time: {time.time() - start}")
 
     # predict
     # load best epoch
-    model, _, test_dl = load_best_model(model_info, 6)
+    model, _, test_dl = load_best_model(model_info, workers)
     start = time.time()
-    model_info["package"].predict(model, test_dl, final=True)
+    model_info["predict"](model, test_dl, final=class_acc)
     print(f"Predict time: {time.time() - start}")
 
-models = {
-        "homebrew-etune": {
-            "package": homebrew,
-            "model": homebrew.Homebrew,
-            "train": homebrew.train,
-            "predict": homebrew.predict,
-            "path": "homebrew-pipeline3-etune",
-            "batch": 64,
-            "epochs": 50,
-            "epoch_tuning": True,
-            "patience": 5,
-            "n_mels": 128,
-            "hop_len": 512
-        },
-        "homebrew": {
-            "package": homebrew,
-            "model": homebrew.Homebrew,
-            "train": homebrew.train,
-            "predict": homebrew.predict,
-            "path": "homebrew-pipeline3",
-            "batch": 64,
-            "epochs": 50,
-            "epoch_tuning": False,
-            "patience": 5,
-            "n_mels": 128,
-            "hop_len": 512
-        },
-        "mnv3tl-etune": {
-            "package": mnv3tl,
-            "model": mnv3tl.MobileNetV3TL,
-            "train": mnv3tl.train,
-            "predict": mnv3tl.predict,
-            "path": "mnv3tl-pipeline3-etune",
-            "batch": 64,
-            "epochs": 15,
-            "epoch_tuning": True,
-            "patience": 5,
-            "n_mels": 224, # required dimension of 224x224
-            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
-        },
-        "mnv3tl": {
-            "package": mnv3tl,
-            "model": mnv3tl.MobileNetV3TL,
-            "train": mnv3tl.train,
-            "predict": mnv3tl.predict,
-            "path": "mnv3tl-pipeline3",
-            "batch": 64,
-            "epochs": 15,
-            "epoch_tuning": False,
-            "patience": 5,
-            "n_mels": 224, # required dimension of 224x224
-            "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
-        },
-        "env2b0tl-etune": {
-            "package": env2b0tl,
-            "model": env2b0tl.EfficientNetV2B0TL,
-            "train": env2b0tl.train,
-            "predict": env2b0tl.predict,
-            "path": "env2b0tl-pipeline3-etune",
-            "batch": 64,
-            "epochs": 18,
-            "epoch_tuning": True,
-            "patience": 5,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        "env2b0tl": {
-            "package": env2b0tl,
-            "model": env2b0tl.EfficientNetV2B0TL,
-            "train": env2b0tl.train,
-            "predict": env2b0tl.predict,
-            "path": "env2b0tl-pipeline3",
-            "batch": 64,
-            "epochs": 18,
-            "epoch_tuning": False,
-            "patience": 5,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        "env2b1tl-etune": {
-            "package": env2b1tl,
-            "model": env2b1tl.EfficientNetV2B1TL,
-            "train": env2b1tl.train,
-            "predict": env2b1tl.predict,
-            "path": "env2b1tl-pipeline3-etune",
-            "batch": 64,
-            "epochs": 11,
-            "epoch_tuning": True,
-            "patience": 5,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        "env2b1tl": {
-            "package": env2b1tl,
-            "model": env2b1tl.EfficientNetV2B1TL,
-            "train": env2b1tl.train,
-            "predict": env2b1tl.predict,
-            "path": "env2b1tl-pipeline3",
-            "batch": 64,
-            "epochs": 11,
-            "epoch_tuning": False,
-            "patience": 5,
-            "n_mels": 192, # required dimension of 192x192
-            "hop_len": 328 # from magic formula ((24414*(2618/1000))//(192-1)-6)
-        },
-        "inv3tl-etune": {
-            "package": inv3tl,
-            "model": inv3tl.InceptionV3TL,
-            "train": inv3tl.train,
-            "predict": inv3tl.predict,
-            "path": "inv3tl-pipeline3-etune",
-            "batch": 32,
-            "epochs": 15,
-            "epoch_tuning": True,
-            "patience": 5,
-            "n_mels": 299, # required dimension of 299x299
-            "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
-        },
-        "inv3tl": {
-            "package": inv3tl,
-            "model": inv3tl.InceptionV3TL,
-            "train": inv3tl.train,
-            "predict": inv3tl.predict,
-            "path": "inv3tl-pipeline3",
-            "batch": 32,
-            "epochs": 15,
-            "epoch_tuning": False,
-            "patience": 5,
-            "n_mels": 299, # required dimension of 299x299
-            "hop_len": 211 # from magic formula ((24414*(2618/1000))//(299-1)-3)
-        },
-        # "dn121tl": {
-        #     "package": dn121tl,
-        #     "model": dn121tl.DenseNet121TL,
-        #     "train": dn121tl.train,
-        #     "predict": dn121tl.predict,
-        #     "path": "dn121tl",
-        #     "batch": 64,
-        #     "epochs": 30,
-        #     "patience": 8,
-        #     "n_mels": 224, #required dimension of 224x224
-        #     "hop_len": 281 # from magic formula ((24414*(2618/1000))//(224-1)-5)
-        # }
-    }
 
+def main(batch, workers, split_ratio, class_acc):
+    """Runs the pipeline for all model parameters specified in models for each model.
 
-def main():
+    Args:
+        Specified in run_pipeline
+    """
     for model in models:
-        run_pipeline(models[model])
+        run_pipeline(models[model], batch, workers, split_ratio, class_acc)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--batch', default=-1, type=int, help='Batch size')
+    parser.add_argument('--workers', default=6, type=int, help='Workers to use for data loading')
+    parser.add_argument('--split', default=0.9, type=float, help='Percent of data for train')
+    parser.add_argument('--class_acc', action='store_true', help='Flag for showing individual class accuracy during predict')
+    args = parser.parse_args()
+    
+    main(batch=args.batch, workers=args.workers, split_ratio=args.split, class_acc=args.class_acc)

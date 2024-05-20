@@ -1,7 +1,6 @@
 from torch.utils.data import DataLoader, Dataset, random_split
 from preprocessing import AudioUtil
 import os
-import metadata
 import util
 import torch
 from torch.utils.data import Subset
@@ -28,12 +27,6 @@ class SoundDS(Dataset):
         tensorFile = torch.load(os.path.join(self.data_path, f'data_{idx}.pt'))
         # Unpack
         audio, classID = tensorFile
-
-        # Load audio file
-        #aud = AudioUtil.load_audio(audio_file)
-        #reaud = AudioUtil.resample(aud, self.sr)
-        #rechan = AudioUtil.rechannel(reaud, self.channel)
-        #dur_aud = AudioUtil.pad_trunc(rechan, self.duration)
         
         # Augment audio only if train data
         if idx in self.val_indices:
@@ -56,6 +49,24 @@ class SoundDS(Dataset):
 
 
 def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
+    """Produces train and test dataloaders.
+    Uses data stored in /Data/tensors.
+
+    Args:
+        batch_size (int, optional): size of batches. Defaults to 32.
+        split_ratio (float, optional): percent of data that goes to training. Defaults to 0.8.
+        num_workers (int, optional): number of subprocesses for dataloading. Defaults to 4.
+        shift_pct (float, optional): max audio shift percent. Defaults to 0.3.
+        n_mels (int, optional): number of mels for spectrogram. Defaults to 64.
+        n_fft (int, optional): fft for spectrogram. Defaults to 1024.
+        hop_len (int, optional): hop len for spectrogram. Defaults to 256.
+        max_mask_pct (float, optional): max percent of spectrogram to mask. Defaults to 0.1.
+        n_masks (int, optional): number of masks per domain. Defaults to 2.
+        transform (_type_, optional): data transformation for pretrained normalizion. Defaults to None.
+
+    Returns:
+        train_dataloader, test_dataloader, train_indices, test_indices
+    """
     data_path = util.from_base_path("/Data/tensors/")
     myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform)
 
@@ -76,7 +87,25 @@ def get_loaders(batch_size=32, split_ratio=0.8, num_workers=4, shift_pct=0.3, n_
     return train_dl, val_dl, train_indices, val_indices
 
 
-def get_existing_loader(model_path="/Data/models/model1", batch_size=32, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
+def get_existing_loader(model_path="/Data/models/test-homebrew", batch_size=32, num_workers=4, shift_pct=0.3, n_mels=64, n_fft=1024, hop_len=256, max_mask_pct=0.1, n_masks=2, transform=None):
+    """Produces train and test dataloaders based on previously defined model data splits.
+    Uses data stored in /Data/tensors.
+
+    Args:
+        model_path (str): path of stored model info. 
+        batch_size (int, optional): size of batches. Defaults to 32.
+        num_workers (int, optional): number of subprocesses for dataloading. Defaults to 4.
+        shift_pct (float, optional): max audio shift percent. Defaults to 0.3.
+        n_mels (int, optional): number of mels for spectrogram. Defaults to 64.
+        n_fft (int, optional): fft for spectrogram. Defaults to 1024.
+        hop_len (int, optional): hop len for spectrogram. Defaults to 256.
+        max_mask_pct (float, optional): max percent of spectrogram to mask. Defaults to 0.1.
+        n_masks (int, optional): number of masks per domain. Defaults to 2.
+        transform (_type_, optional): data transformation for pretrained normalizion. Defaults to None.
+
+    Returns:
+        train_dataloader, test_dataloader
+    """
     data_path = util.from_base_path("/Data/tensors/")
     myds = SoundDS(data_path, shift_pct, n_mels, n_fft, hop_len, max_mask_pct, n_masks, transform)
 

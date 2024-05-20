@@ -11,27 +11,18 @@ CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
     return x.expand(3, -1, -1)
 
-# optimal load seems to be batch size 32, workers 6 - minimal fluctuation in CUDA usage
-class InceptionV3TL(nn.Module):
-    def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-inv3tl"), epoch_tuning=False):
-        super(InceptionV3TL, self).__init__()
+# optimal load seems to be batch size 64, workers 6 - minimal fluctuation in CUDA usage and perfect fit in memory
+class EfficientNetV2B0TL(nn.Module):
+    def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-env2b0tl"), epoch_tuning=False):
+        super(EfficientNetV2B0TL, self).__init__()
         self.save_path = save_path
         self.epoch_tuning = epoch_tuning
 
         if input_path is not None:
-            self.model = timm.create_model('inception_v3', pretrained=False, num_classes=CLASSES)
-
-            for name, param in self.model.named_parameters():
-                if name.split(".")[0] not in ["Mixed_6a", "Mixed_6b", "Mixed_6c" "Mixed_6d", "Mixed_6e", "Mixed_7a", "Mixed_7b", "Mixed_7c"]:
-                    param.requires_grad = False
-
-            self.model.load_state_dict(torch.load(input_path, map_location="cuda" if torch.cuda.is_available() else "cpu"))
+            self.model = timm.create_model('tf_efficientnetv2_b0.in1k', pretrained=False, num_classes=CLASSES)
+            self.model.load_state_dict(torch.load(input_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
         else:
-            self.model = timm.create_model('inception_v3', pretrained=True, num_classes=CLASSES)
-
-            for name, param in self.model.named_parameters():
-                if name.split(".")[0] not in ["Mixed_6a", "Mixed_6b", "Mixed_6c" "Mixed_6d", "Mixed_6e", "Mixed_7a", "Mixed_7b", "Mixed_7c"]:
-                    param.requires_grad = False
+            self.model = timm.create_model('tf_efficientnetv2_b0.in1k', pretrained=True, num_classes=CLASSES)
         
         self.config = resolve_data_config({}, model=self.model)
         self.transform = Compose([
@@ -52,7 +43,7 @@ class InceptionV3TL(nn.Module):
         torch.save(self.model.state_dict(), full_path)
 
     def name(self):
-        return f"inv3tl{'-etuning' if self.epoch_tuning else ''}"
+        return f"env2b0tl{'-etuning' if self.epoch_tuning else ''}"
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):

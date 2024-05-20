@@ -10,6 +10,11 @@ class Metadata():
         self.path = Path(directoryPath)
 
     def getMetadata(self) -> pd.DataFrame:
+        """Compiles metatdata informaion from all datasets to one place.
+
+        Returns:
+            pd.DataFrame: filepath and rescaled label for each sample
+        """
         folders = [x for x in self.path.iterdir() if x.is_dir()]
         data = pd.DataFrame()
         for folder in folders:
