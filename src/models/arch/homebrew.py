@@ -56,7 +56,7 @@ class Homebrew(nn.Module):
         self.conv = nn.Sequential(*conv_layers)
         
         if input_path is not None:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
             self.load_state_dict(torch.load(input_path, map_location=device))
 
     def forward(self, x):
@@ -85,7 +85,7 @@ class Homebrew(nn.Module):
         return f"homebrew{'-etuning' if self.epoch_tuning else ''}"
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()
@@ -170,7 +170,7 @@ def predict(model, val_dl, final=False):
     correct_predictions = [0] * CLASSES
     total_predictions = [0] * CLASSES
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
     model = model.to(device)
     model.eval()
 

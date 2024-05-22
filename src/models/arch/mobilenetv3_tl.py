@@ -19,7 +19,7 @@ class MobileNetV3TL(nn.Module):
 
         if input_path is not None:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=False, num_classes=CLASSES)
-            self.model.load_state_dict(torch.load(input_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
+            self.model.load_state_dict(torch.load(input_path, map_location=torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))))
         else:
             self.model = timm.create_model('mobilenetv3_large_100', pretrained=True, num_classes=CLASSES)
         
@@ -46,7 +46,7 @@ class MobileNetV3TL(nn.Module):
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()
@@ -132,7 +132,7 @@ def predict(model, val_dl, final=False):
     correct_predictions = [0] * CLASSES
     total_predictions = [0] * CLASSES
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
     model = model.to(device)
     model.eval()
 

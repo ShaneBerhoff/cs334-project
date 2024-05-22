@@ -11,7 +11,6 @@ CLASSES = 6 # 0 sad, 1 angry, 2 disgust, 3 fear, 4 happy, 5 neutral
 def repeat_channels(x):
     return x.expand(3, -1, -1)
 
-# optimal load seems to be batch size 32, workers 6 - minimal fluctuation in CUDA usage
 class InceptionV3TL(nn.Module):
     def __init__(self, input_path=None, save_path=util.from_base_path("/Data/models/test-inv3tl"), epoch_tuning=False):
         super(InceptionV3TL, self).__init__()
@@ -25,7 +24,7 @@ class InceptionV3TL(nn.Module):
                 if name.split(".")[0] not in ["Mixed_6a", "Mixed_6b", "Mixed_6c" "Mixed_6d", "Mixed_6e", "Mixed_7a", "Mixed_7b", "Mixed_7c"]:
                     param.requires_grad = False
 
-            self.model.load_state_dict(torch.load(input_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
+            self.model.load_state_dict(torch.load(input_path, map_location=torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))))
         else:
             self.model = timm.create_model('inception_v3', pretrained=True, num_classes=CLASSES)
 
@@ -56,7 +55,7 @@ class InceptionV3TL(nn.Module):
 
 
 def train(model, train_dl, val_dl, max_epochs, patience=5):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()
@@ -142,7 +141,7 @@ def predict(model, val_dl, final=False):
     correct_predictions = [0] * CLASSES
     total_predictions = [0] * CLASSES
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
     model = model.to(device)
     model.eval()
 
