@@ -55,6 +55,22 @@ Run `./src/models/train.py` from the command line to train any model listed in t
 
 For batch processing of all models, use `./src/models/pipeline.py`, which will train and save all defined models.
 
+#### Previous Parameters
+The optimal batch sizing and number of workers to achieve minimum train time per epoch can vary based on the hardware used. The goal is to maximize GPU utilization while making efficient use of CPU resources. Below are the configurations for the two devices used in the project along with their optimal training parameters:
+
+- **Acer Swift X 2021**:
+  - **CPU**: AMD Ryzen 7 5800U @ 1.9 GHz
+  - **GPU**: Nvidia GeForce RTX 3050 Ti @ 40W
+  - **RAM**: 16 GB
+  - **Optimal Batch Size**: 64
+  - **Optimal Workers**: 6
+- **MacBook Pro M1 Pro**:
+  - **CPU**: 10-core CPU
+  - **GPU**: 16-core GPU
+  - **RAM**: 32 GB
+  - **Optimal Batch Size**: 64
+  - **Optimal Workers**: 1
+
 ### Model Prediction and Management
 Use `./src/models/load_model.py` to load a previously trained model for prediction, with the ability to continue training. Specify the model using its `name_key` from the `models` dictionary.
 
